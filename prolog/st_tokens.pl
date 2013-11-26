@@ -8,9 +8,10 @@
 % Tokens are:
 % any atom - verbatim text;
 % out(Term) - output instruction (escaped);
-% out_unescaped(Term) - output instruction (unescaped).
-% block(Term) - block start.
-% end - block end.
+% out_unescaped(Term) - output instruction (unescaped);
+% block(Term) - block start;
+% end - block end;
+% include(location) - includes a file.
 %
 % Throws error(invalid_input(Atom)) when
 % the atom in out/block instruction cannot
@@ -58,6 +59,9 @@ token(out(Term)) -->
     
 token(out_unescaped(Term)) -->
     "[[-", ws, term(Term), !.
+    
+token(Term) -->
+    "[[*", ws, term(Term), !.
 
 token(end) -->
     "[[:]]", !.

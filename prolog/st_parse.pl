@@ -40,6 +40,9 @@ block(block(Term, Blocks)) -->
 block(text(Text)) -->
     [text(Text)].
     
+block(include(Text)) -->
+    [include(Text)].
+    
 block_end -->
     [end], !.
     
