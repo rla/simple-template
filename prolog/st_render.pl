@@ -116,6 +116,11 @@ cond_eval(Left=Right, Scope):-
     cond_expr(Right, Scope, RightValue), !,
     LeftValue = RightValue.
     
+cond_eval(Left\=Right, Scope):-
+    cond_expr(Left, Scope, LeftValue),
+    cond_expr(Right, Scope, RightValue), !,
+    LeftValue \= RightValue.
+
 cond_eval(','(Left, Right), Scope):-
     cond_eval(Left, Scope),
     cond_eval(Right, Scope).
