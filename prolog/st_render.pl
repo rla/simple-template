@@ -134,14 +134,14 @@ cond_eval(';'(_, Right), Scope):-
 cond_eval(Cond, _):-
     throw(error(cannot_evaluate_cond(Cond))).
     
+cond_expr([], _, ''):- !.
+    
 cond_expr(Var, Scope, Value):-
     atom(Var), !,
     scope_find(Var, Scope, Value).
 
 cond_expr(Num, _, Num):-
     number(Num), !.
-    
-cond_expr([], _, '').
 
 cond_expr([Code|Codes], _, Atom):-
     number(Code), !,
