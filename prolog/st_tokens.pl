@@ -11,7 +11,10 @@
 % out_unescaped(Term) - output instruction (unescaped);
 % block(Term) - block start;
 % end - block end;
-% include(location) - includes a file.
+% include(location) - includes a file;
+% cond_if(Term) - conditional block start;
+% cond_else - start of conditional else;
+% cond_end - conditional block end.
 %
 % Throws error(invalid_input(Atom)) when
 % the atom in out/block instruction cannot
@@ -68,6 +71,15 @@ token(end) -->
     
 token(block(Term)) -->
     "[[:", ws, term(Term), !.
+    
+token(cond_end) -->
+    "[[?]]", !.
+    
+token(cond_else) -->
+    "[[?", ws, "else", ws, "]]", !.
+    
+token(cond_if(Term)) -->
+    "[[?", ws, term(Term), !.
     
 token(Code) -->
     [Code].

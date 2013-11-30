@@ -18,9 +18,19 @@
 st_parse(Codes, Blocks):-
     st_tokens(Codes, Tokens),
     phrase(blocks(Tmp), Tokens, Rest), !,
-    (   Rest = [end|_]
-    ->  throw(error(unexpected_block_end))
-    ;   Blocks = Tmp).
+    check_rest(Rest),
+    Blocks = Tmp.
+
+check_rest([]):- !.
+
+check_rest([end|_]):-
+    throw(error(unexpected_block_end)).
+    
+check_rest([cond_end|_]):-
+    throw(error(unexpected_cond_end)).
+    
+check_rest([cond_else|_]):-
+    throw(error(unexpected_cond_else)).
 
 blocks([Block|Blocks]) -->
     block(Block), !,
@@ -37,6 +47,9 @@ block(out_unescaped(Term)) -->
 block(block(Term, Blocks)) -->
     [block(Term)], blocks(Blocks), block_end.
     
+block(cond(Term, TrueBlocks, FalseBlocks)) -->
+    [cond_if(Term)], blocks(TrueBlocks), cond_else(FalseBlocks).
+    
 block(text(Text)) -->
     [text(Text)].
     
@@ -48,3 +61,18 @@ block_end -->
     
 block_end -->
     { throw(error(expecting_block_end)) }.
+
+cond_else([]) -->
+    [cond_end], !.
+    
+cond_else(Blocks) -->
+    [cond_else], blocks(Blocks), cond_end, !.
+    
+cond_else(_) -->
+    { throw(error(expecting_cond_else_or_cond_end)) }.
+
+cond_end -->
+    [cond_end], !.
+    
+cond_end -->
+    { throw(error(expecting_cond_end)) }.

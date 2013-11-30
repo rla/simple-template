@@ -1,12 +1,16 @@
 :- module(st_render, [
-    st_render/3,      % +Templ, +Data, +File
-    st_render/4,      % +Templ, +Data, +Stream, +File
-    st_render_file/2, % +File, +Data
-    st_render_file/3, % +File, +Data, +Stream
+    st_render/3,       % +Templ, +Data, +File
+    st_render/4,       % +Templ, +Data, +Stream, +File
+    st_render_file/2,  % +File, +Data
+    st_render_file/3,  % +File, +Data, +Stream
+    st_render_codes/3, % +Codes, +File, +Data
+    st_render_codes/4, % +Codes, +File, +Data, +Stream
     enable_cache/1
 ]).
 
 :- use_module(library(readutil)).
+:- use_module(library(error)).
+
 :- use_module(st_parse).
 
 :- dynamic(cache).
@@ -46,6 +50,14 @@ st_render_file(File, Data, Stream):-
     absolute_file_name(File, Abs),
     st_template_cached(Abs, Templ),
     st_render(Templ, Data, Stream, Abs).
+    
+st_render_codes(Codes, Data, File):-
+    current_output(Stream),
+    st_render_codes(Codes, Data, Stream, File).
+    
+st_render_codes(Codes, Data, Stream, File):-
+    st_parse(Codes, Templ),
+    st_render(Templ, Data, Stream, File).
 
 %% st_render(+Temp, +Data, +File) is det.
 %
@@ -88,10 +100,50 @@ st_render_scope([include(Path)|Blocks], Scope, Stream, File):- !,
     st_render_file(AbsFile, Scope, Stream),
     st_render_scope(Blocks, Scope, Stream, File).
     
+st_render_scope([cond(if(Cond), True, False)|Blocks], Scope, Stream, File):- !,
+    (   cond_eval(Cond, Scope)
+    ->  st_render_scope(True, Scope, Stream, File)
+    ;   st_render_scope(False, Scope, Stream, File)),
+    st_render_scope(Blocks, Scope, Stream, File).
+
 st_render_scope([Block|_], _, _, _):-
     throw(error(unknown_block(Block))).
     
 st_render_scope([], _, _, _).
+
+cond_eval(Left=Right, Scope):-
+    cond_expr(Left, Scope, LeftValue),
+    cond_expr(Right, Scope, RightValue), !,
+    LeftValue = RightValue.
+    
+cond_eval(','(Left, Right), Scope):-
+    cond_eval(Left, Scope),
+    cond_eval(Right, Scope).
+    
+cond_eval(';'(Left, _), Scope):-
+    cond_eval(Left, Scope), !.
+    
+cond_eval(';'(_, Right), Scope):-
+    cond_eval(Right, Scope), !.
+    
+cond_eval(Cond, _):-
+    throw(error(cannot_evaluate_cond(Cond))).
+    
+cond_expr(Var, Scope, Value):-
+    atom(Var), !,
+    scope_find(Var, Scope, Value).
+
+cond_expr(Num, _, Num):-
+    number(Num), !.
+    
+cond_expr([], _, '').
+
+cond_expr([Code|Codes], _, Atom):-
+    number(Code), !,
+    atom_codes(Atom, [Code|Codes]).
+    
+cond_expr(Expr, _, _):-
+    throw(error(cannot_evaluate_cond_expr(Expr))).
 
 % Creates new scope entry and renders
 % nested blocks.
