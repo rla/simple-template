@@ -14,7 +14,8 @@
 % include(location) - includes a file;
 % cond_if(Term) - conditional block start;
 % cond_else - start of conditional else;
-% cond_end - conditional block end.
+% cond_end - conditional block end;
+% call(Term) - function call.
 %
 % Throws error(invalid_input(Atom)) when
 % the atom in out/block instruction cannot
@@ -81,6 +82,9 @@ token(cond_else) -->
 token(cond_if(Term)) -->
     "[[?", ws, term(Term), !.
     
+token(call(Term)) -->
+    "[[\\", ws, term(Term), !.
+
 token(Code) -->
     [Code].
     

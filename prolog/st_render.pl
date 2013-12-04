@@ -1,124 +1,208 @@
 :- module(st_render, [
-    st_render/3,       % +Templ, +Data, +File
-    st_render/4,       % +Templ, +Data, +Stream, +File
     st_render_file/2,  % +File, +Data
     st_render_file/3,  % +File, +Data, +Stream
     st_render_codes/3, % +Codes, +File, +Data
     st_render_codes/4, % +Codes, +File, +Data, +Stream
-    enable_cache/1
+    st_enable_cache/1, % +Bool
+    st_set_function/3, % +Name, +Arity, :Goal
+    st_set_global/2    % +Name, +Value
 ]).
 
 :- use_module(library(readutil)).
 :- use_module(library(error)).
+:- use_module(library(debug)).
 
 :- use_module(st_parse).
 
 :- dynamic(cache).
     
-enable_cache(true):-
+st_enable_cache(true):-
     (   cache
     ->  true
     ;   assertz(cache)).
 
-enable_cache(false):-
+st_enable_cache(false):-
     retractall(cache).
     
-:- dynamic(template/2).
+:- dynamic(cache/2).
 
-st_template(File, Templ):-
+template(File, Templ):-
     with_mutex(st_template,
-        st_template_unsafe(File, Templ)).
+        template_unsafe(File, Templ)).
 
-st_template_unsafe(File, Templ):-
-    (   template(File, Templ)
+template_unsafe(File, Templ):-
+    (   cache(File, Templ)
     ->  true
     ;   read_file_to_codes(File, Codes, []),
         st_parse(Codes, Templ),
-        assertz(template(File, Templ))).
+        assertz(cache(File, Templ))).
     
-st_template_cached(File, Templ):-
+template_cached(File, Templ):-
     (   cache
-    ->  st_template(File, Templ)
+    ->  template(File, Templ)
     ;   read_file_to_codes(File, Codes, []),
         st_parse(Codes, Templ)).
 
+:- dynamic(fun/3).
+
+:- module_transparent(st_function/3).
+
+%% st_set_function(+Name, +Arity, :Goal) is det.
+%
+% Registers new function. Goal must have arity
+% Arity + 1. Last argument of goal is used as
+% output.
+
+st_set_function(Name, Arity, Goal):-
+    must_be(atom, Name),
+    must_be(nonneg, Arity),
+    must_be(nonvar, Goal),
+    assert_function(Name, Arity, Goal).
+    
+assert_function(Name, Arity, Goal):-
+    (   fun(Name, Arity, Goal)
+    ->  true
+    ;   assertz(fun(Name, Arity, Goal))).
+    
+:- dynamic(global/2).
+
+%% st_set_global(+Name, +Value) is det.
+%
+% Sets the global value. Value must
+% be ground.
+
+st_set_global(Name, Value):-
+    must_be(atom, Name),
+    must_be(ground, Value),
+    Term =.. [Name, Value],
+    retractall(global(Name, _)),
+    assertz(global(Name, Term)).
+    
+append_globals(In, Out):-
+    findall(Term, global(_, Term), Terms),
+    append(In, Terms, Out).
+
+%% st_render_file(+File, +Data) is det.
+%
+% Renders given file with the given data.
+% Calls st_render_file/3 with the current stream.
+    
 st_render_file(File, Data):-
     current_output(Stream),
     st_render_file(File, Data, Stream).
 
+%% st_render_file(+File, +Data, +Stream) is det.
+%
+% Renders given file with the given data
+% into the stream.
+    
 st_render_file(File, Data, Stream):-
-    absolute_file_name(File, Abs),
-    st_template_cached(Abs, Templ),
-    st_render(Templ, Data, Stream, Abs).
+    append_globals(Data, WithGlobals),
+    render_file(File, WithGlobals, Stream).
+
+%% st_render_codes(+Codes, +Data, +File) is det.
+%
+% Renders codes with the given data.
+% Calls st_render_codes/3 with the current stream.
     
 st_render_codes(Codes, Data, File):-
     current_output(Stream),
     st_render_codes(Codes, Data, Stream, File).
+
+%% st_render_codes(+Codes, +Data, +Stream, +File) is det.
+%
+% Renders codes with the given data into the stream.
+% File argument is used for resolving includes.
     
 st_render_codes(Codes, Data, Stream, File):-
     st_parse(Codes, Templ),
-    st_render(Templ, Data, Stream, File).
+    append_globals(Data, WithGlobals),
+    render(Templ, WithGlobals, Stream, File).
+    
+render_file(File, Data, Stream):-
+    absolute_file_name(File, Abs),
+    template_cached(Abs, Templ),
+    render(Templ, Data, Stream, Abs).
 
 %% st_render(+Temp, +Data, +File) is det.
 %
 % Renders template with the given data.
 % Writes output into current output.
 
-st_render(Templ, Data, File):-
-    current_output(Stream),
-    st_render(Templ, Data, Stream, File).
+st_render(Temp, Data, File):-
+    append_globals(Data, WithGlobals),
+    render(Temp, WithGlobals, File).
 
-st_render(Templ, Data, Stream, File):-
-    st_render_scope(Templ, Data, Stream, File).
+render(Templ, Data, File):-
+    current_output(Stream),
+    render(Templ, Data, Stream, File).
+
+render(Templ, Data, Stream, File):-
+    must_be(ground, Data),
+    render_scope(Templ, Data, Stream, File).
     
-st_render_scope([out(Path)|Blocks], Scope, Stream, File):- !,
+render_scope([out(Path)|Blocks], Scope, Stream, File):- !,
     scope_find(Path, Scope, Value),
     escape(Value, Escaped),
     write(Stream, Escaped),
-    st_render_scope(Blocks, Scope, Stream, File).
+    render_scope(Blocks, Scope, Stream, File).
     
-st_render_scope([out_unescaped(Path)|Blocks], Scope, Stream, File):- !,
+render_scope([out_unescaped(Path)|Blocks], Scope, Stream, File):- !,
     scope_find(Path, Scope, Value),
     write(Stream, Value),
-    st_render_scope(Blocks, Scope, Stream, File).
+    render_scope(Blocks, Scope, Stream, File).
 
-st_render_scope([block(each(Path, Var), Nested)|Blocks], Scope, Stream, File):- !,
+render_scope([block(each(Path, Var), Nested)|Blocks], Scope, Stream, File):- !,
     scope_find(Path, Scope, Values),
     (   is_list(Values)
-    ->  st_render_scope_values(Values, Var, Nested, Scope, Stream, File),
-        st_render_scope(Blocks, Scope, Stream, File)
+    ->  render_scope_values(Values, Var, Nested, Scope, Stream, File),
+        render_scope(Blocks, Scope, Stream, File)
     ;   throw(error(path_in_each_not_list(Path)))).
     
-st_render_scope([text(Text)|Blocks], Scope, Stream, File):- !,
+render_scope([text(Text)|Blocks], Scope, Stream, File):- !,
     write(Stream, Text),
-    st_render_scope(Blocks, Scope, Stream, File).
+    render_scope(Blocks, Scope, Stream, File).
     
-st_render_scope([include(Path)|Blocks], Scope, Stream, File):- !,
+render_scope([include(Path)|Blocks], Scope, Stream, File):- !,
     file_directory_name(File, Dir),
     absolute_file_name(Path, Abs, [relative_to(Dir)]),
     atom_concat(Abs, '.html', AbsFile),
-    st_render_file(AbsFile, Scope, Stream),
-    st_render_scope(Blocks, Scope, Stream, File).
+    render_file(AbsFile, Scope, Stream),
+    render_scope(Blocks, Scope, Stream, File).
     
-st_render_scope([cond(if(Cond), True, False)|Blocks], Scope, Stream, File):- !,
-    (   cond_eval(Cond, Scope)
-    ->  st_render_scope(True, Scope, Stream, File)
-    ;   st_render_scope(False, Scope, Stream, File)),
-    st_render_scope(Blocks, Scope, Stream, File).
+render_scope([call(Fun)|Blocks], Scope, Stream, File):- !,
+    call_function(Fun, Scope, Stream),
+    render_scope(Blocks, Scope, Stream, File).
 
-st_render_scope([Block|_], _, _, _):-
+render_scope([cond(if(Cond), True, False)|Blocks], Scope, Stream, File):- !,
+    (   cond_eval(Cond, Scope)
+    ->  render_scope(True, Scope, Stream, File)
+    ;   render_scope(False, Scope, Stream, File)),
+    render_scope(Blocks, Scope, Stream, File).
+
+render_scope([Block|_], _, _, _):-
     throw(error(unknown_block(Block))).
-    
-st_render_scope([], _, _, _).
+
+render_scope([], _, _, _).
+
+call_function(Fun, Scope, Stream):-
+    Fun =.. [Name|Args],
+    length(Args, Arity),
+    (   fun(Name, Arity, Goal)
+    ->  maplist(eval_in_scope(Scope), Args, Vals),
+        append(Vals, Out, GoalArgs),
+        call(Goal, GoalArgs),
+        write(Stream, Out)
+    ;   throw(error(no_function(Name/Arity)))).
 
 cond_eval(Left=Right, Scope):-
-    cond_expr(Left, Scope, LeftValue),
-    cond_expr(Right, Scope, RightValue), !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
     LeftValue = RightValue.
     
 cond_eval(Left\=Right, Scope):-
-    cond_expr(Left, Scope, LeftValue),
-    cond_expr(Right, Scope, RightValue), !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
     LeftValue \= RightValue.
 
 cond_eval(','(Left, Right), Scope):-
@@ -133,32 +217,35 @@ cond_eval(';'(_, Right), Scope):-
     
 cond_eval(Cond, _):-
     throw(error(cannot_evaluate_cond(Cond))).
+
+eval_in_scope(Scope, Expr, Value):-
+    expr_eval(Expr, Scope, Value).
     
-cond_expr([], _, ''):- !.
+expr_eval([], _, ''):- !.
     
-cond_expr(Var, Scope, Value):-
+expr_eval(Var, Scope, Value):-
     atom(Var), !,
     scope_find(Var, Scope, Value).
 
-cond_expr(Num, _, Num):-
+expr_eval(Num, _, Num):-
     number(Num), !.
 
-cond_expr([Code|Codes], _, Atom):-
+expr_eval([Code|Codes], _, Atom):-
     number(Code), !,
     atom_codes(Atom, [Code|Codes]).
     
-cond_expr(Expr, _, _):-
+expr_eval(Expr, _, _):-
     throw(error(cannot_evaluate_cond_expr(Expr))).
 
 % Creates new scope entry and renders
 % nested blocks.
     
-st_render_scope_values([Value|Values], Var, Nested, Scope, Stream, File):-
+render_scope_values([Value|Values], Var, Nested, Scope, Stream, File):-
     Entry =.. [Var, Value],
-    st_render_scope(Nested, [Entry|Scope], Stream, File),
-    st_render_scope_values(Values, Var, Nested, Scope, Stream, File).
+    render_scope(Nested, [Entry|Scope], Stream, File),
+    render_scope_values(Values, Var, Nested, Scope, Stream, File).
     
-st_render_scope_values([], _, _, _, _, _).
+render_scope_values([], _, _, _, _, _).
 
 % Finds value from the given
 % scope.

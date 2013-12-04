@@ -56,6 +56,9 @@ block(text(Text)) -->
 block(include(Text)) -->
     [include(Text)].
     
+block(call(Term)) -->
+    [call(Term)].
+    
 block_end -->
     [end], !.
     
