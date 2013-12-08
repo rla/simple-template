@@ -5,7 +5,8 @@
     st_render_codes/4, % +Codes, +Data, +Stream, +File
     st_enable_cache/1, % +Bool
     st_set_function/3, % +Name, +Arity, :Goal
-    st_set_global/2    % +Name, +Value
+    st_set_global/2,   % +Name, +Value
+    st_set_extension/1 % +Extension
 ]).
 
 :- use_module(library(readutil)).
@@ -81,11 +82,30 @@ st_set_global(Name, Value):-
 append_globals(In, Out):-
     findall(Term, global(_, Term), Terms),
     append(In, Terms, Out).
+    
+:- dynamic(extension/1).
+
+%% st_set_extension(+Atom) is det.
+%
+% Sets the file name extension.
+% Calling it multiple times makes
+% it use the last value.
+
+st_set_extension(Ext):-
+    must_be(atom, Ext),
+    retractall(extension(_)),
+    assertz(extension(Ext)).
+    
+current_extension(Ext):-
+    (   extension(Ext)
+    ->  true
+    ;   throw(error(extension_not_set(Ext)))).
 
 %% st_render_file(+File, +Data) is det.
 %
 % Renders given file with the given data.
 % Calls st_render_file/3 with the current stream.
+% File name is added current extension.
     
 st_render_file(File, Data):-
     current_output(Stream),
@@ -121,7 +141,9 @@ st_render_codes(Codes, Data, Stream, File):-
     
 render_file(File, Data, Stream):-
     absolute_file_name(File, Abs),
-    template_cached(Abs, Templ),
+    current_extension(Ext),
+    atom_concat(File, Ext, FullAbs),
+    template_cached(FullAbs, Templ),
     render(Templ, Data, Stream, Abs).
 
 %% st_render(+Temp, +Data, +File) is det.
@@ -211,10 +233,9 @@ render_scope([], _, _, _).
 % Resolves included file Path
 % aginst the current file File.
 
-resolve_file(Path, File, AbsFile):-
+resolve_file(Path, File, Abs):-
     file_directory_name(File, Dir),
-    absolute_file_name(Path, Abs, [relative_to(Dir)]),
-    atom_concat(Abs, '.html', AbsFile).
+    absolute_file_name(Path, Abs, [relative_to(Dir)]).
 
 call_function(Fun, Scope, Stream):-
     Fun =.. [Name|Args],

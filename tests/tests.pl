@@ -15,6 +15,8 @@ test_rendering(Goal, Expected):-
 test_fun(In, Out):-
     Out is In + 1.
 
+:- st_set_extension('.html').
+
 test(empty):-
     test_rendering(st_render_codes("", [], ''), '').
     
@@ -58,27 +60,29 @@ test(each_index_length):-
     test_rendering(st_render_codes("[[: each(items, item, i, n) ]][[= item ]][[= i ]][[= n ]][[:]]", [items([1,2,3])], ''), '103213323').
     
 test(include):-
-    test_rendering(st_render_codes("[[* include(tests/included) ]]", [], 'dummy.html'), 'i').
+    test_rendering(st_render_codes("[[* include(tests/included) ]]", [], dummy), 'i').
     
 test(include_variable):-
-    test_rendering(st_render_codes("[[* include(tests/included_variable) ]]", [a(1)], 'dummy.html'), '1').
+    test_rendering(st_render_codes("[[* include(tests/included_variable) ]]", [a(1)], dummy), '1').
     
 test(include_variable_scoped):-
-    test_rendering(st_render_codes("[[* include(tests/included_variable, b) ]]", [b([a(1)])], 'dummy.html'), '1').
+    test_rendering(st_render_codes("[[* include(tests/included_variable, b) ]]", [b([a(1)])], dummy), '1').
     
 test(function):-
-    test_rendering(st_render_codes("[[\\ test(1) ]]", [], 'dummy.html'), '2').
+    test_rendering(st_render_codes("[[\\ test(1) ]]", [], dummy), '2').
     
 test(arith_plus):-
-    test_rendering(st_render_codes("[[? if(1+1=2) ]]t[[?]]", [], 'dummy.html'), 't').
+    test_rendering(st_render_codes("[[? if(1+1=2) ]]t[[?]]", [], dummy), 't').
     
 test(arith_minus):-
-    test_rendering(st_render_codes("[[? if(1-1=0) ]]t[[?]]", [], 'dummy.html'), 't').
+    test_rendering(st_render_codes("[[? if(1-1=0) ]]t[[?]]", [], dummy), 't').
     
 test(arith_mult):-
-    test_rendering(st_render_codes("[[? if(2*2=4) ]]t[[?]]", [], 'dummy.html'), 't').
+    test_rendering(st_render_codes("[[? if(2*2=4) ]]t[[?]]", [], dummy), 't').
     
 test(arith_div):-
-    test_rendering(st_render_codes("[[? if(2/2=1) ]]t[[?]]", [], 'dummy.html'), 't').
+    test_rendering(st_render_codes("[[? if(2/2=1) ]]t[[?]]", [], dummy), 't').
 
+% FIXME test negation, composite paths.
+    
 :- end_tests(st_render).
