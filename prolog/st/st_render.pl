@@ -45,7 +45,7 @@ template_cached(File, Templ):-
 
 :- dynamic(fun/3).
 
-:- module_transparent(st_function/3).
+:- meta_predicate(st_set_function(+, +, 2)).
 
 %% st_set_function(+Name, +Arity, :Goal) is det.
 %
@@ -213,8 +213,8 @@ call_function(Fun, Scope, Stream):-
     length(Args, Arity),
     (   fun(Name, Arity, Goal)
     ->  maplist(eval_in_scope(Scope), Args, Vals),
-        append(Vals, Out, GoalArgs),
-        call(Goal, GoalArgs),
+        append(Vals, [Out], GoalArgs),
+        apply(Goal, GoalArgs),
         write(Stream, Out)
     ;   throw(error(no_function(Name/Arity)))).
 

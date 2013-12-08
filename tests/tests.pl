@@ -9,6 +9,11 @@ test_rendering(Goal, Expected):-
     with_output_to_codes(Goal, Codes),
     atom_codes(Atom, Codes),
     assertion(Atom = Expected).
+    
+:- st_set_function(test, 1, test_fun).
+
+test_fun(In, Out):-
+    Out is In + 1.
 
 test(empty):-
     test_rendering(st_render_codes("", [], ''), '').
@@ -57,5 +62,8 @@ test(include_variable):-
     
 test(include_variable_scoped):-
     test_rendering(st_render_codes("[[* include(tests/included_variable, b) ]]", [b([a(1)])], 'dummy.html'), '1').
+    
+test(function):-
+    test_rendering(st_render_codes("[[\\ test(1) ]]", [], 'dummy.html'), '2').
 
 :- end_tests(st_render).
