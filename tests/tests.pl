@@ -48,5 +48,14 @@ test(each):-
     
 test(each_index):-
     test_rendering(st_render_codes("[[: each(items, item, i) ]][[= item ]][[= i ]][[:]]", [items([1,2,3])], ''), '102132').
+    
+test(include):-
+    test_rendering(st_render_codes("[[* include(tests/included) ]]", [], 'dummy.html'), 'i').
+    
+test(include_variable):-
+    test_rendering(st_render_codes("[[* include(tests/included_variable) ]]", [a(1)], 'dummy.html'), '1').
+    
+test(include_variable_scoped):-
+    test_rendering(st_render_codes("[[* include(tests/included_variable, b) ]]", [b([a(1)])], 'dummy.html'), '1').
 
 :- end_tests(st_render).

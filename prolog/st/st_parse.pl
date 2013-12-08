@@ -38,6 +38,8 @@ blocks([Block|Blocks]) -->
     
 blocks([]) --> [].
 
+% FIXME unknown block error.
+
 block(out(Term)) -->
     [out(Term)].
     
@@ -55,6 +57,9 @@ block(text(Text)) -->
     
 block(include(Text)) -->
     [include(Text)].
+    
+block(include(Text, Var)) -->
+    [include(Text, Var)].
     
 block(call(Term)) -->
     [call(Term)].

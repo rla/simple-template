@@ -171,10 +171,18 @@ render_scope([text(Text)|Blocks], Scope, Stream, File):- !,
     render_scope(Blocks, Scope, Stream, File).
     
 render_scope([include(Path)|Blocks], Scope, Stream, File):- !,
-    file_directory_name(File, Dir),
-    absolute_file_name(Path, Abs, [relative_to(Dir)]),
-    atom_concat(Abs, '.html', AbsFile),
+    resolve_file(Path, File, AbsFile),
     render_file(AbsFile, Scope, Stream),
+    render_scope(Blocks, Scope, Stream, File).
+
+% Handles include with subscope.
+% Variables from the parent scope
+% become unavailable in the included file.
+    
+render_scope([include(Path, Var)|Blocks], Scope, Stream, File):- !,
+    resolve_file(Path, File, AbsFile),    
+    scope_find(Var, Scope, Value),
+    render_file(AbsFile, Value, Stream),
     render_scope(Blocks, Scope, Stream, File).
     
 render_scope([call(Fun)|Blocks], Scope, Stream, File):- !,
@@ -191,6 +199,14 @@ render_scope([Block|_], _, _, _):-
     throw(error(unknown_block(Block))).
 
 render_scope([], _, _, _).
+
+% Resolves included file Path
+% aginst the current file File.
+
+resolve_file(Path, File, AbsFile):-
+    file_directory_name(File, Dir),
+    absolute_file_name(Path, Abs, [relative_to(Dir)]),
+    atom_concat(Abs, '.html', AbsFile).
 
 call_function(Fun, Scope, Stream):-
     Fun =.. [Name|Args],
