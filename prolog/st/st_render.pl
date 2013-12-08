@@ -328,13 +328,16 @@ expr_eval(Left * Right, Scope, Value):- !,
     expr_eval(Left, Scope, LeftValue),
     expr_eval(Right, Scope, RightValue),
     Value is LeftValue * RightValue.
+    
+expr_eval(Base:Var, Scope, Value):- !,
+    scope_find(Base:Var, Scope, Value).
 
 expr_eval([Code|Codes], _, Atom):-
     number(Code), !,
     atom_codes(Atom, [Code|Codes]).
     
 expr_eval(Expr, _, _):-
-    throw(error(cannot_evaluate_cond_expr(Expr))).
+    throw(error(cannot_evaluate_expr(Expr))).
 
 % Creates new scope entry and renders
 % nested blocks.
