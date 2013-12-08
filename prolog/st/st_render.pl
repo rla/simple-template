@@ -142,7 +142,7 @@ st_render_codes(Codes, Data, Stream, File):-
 render_file(File, Data, Stream):-
     absolute_file_name(File, Abs),
     current_extension(Ext),
-    atom_concat(File, Ext, FullAbs),
+    atom_concat(Abs, Ext, FullAbs),
     template_cached(FullAbs, Templ),
     render(Templ, Data, Stream, Abs).
 
