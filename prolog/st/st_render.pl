@@ -1,8 +1,8 @@
 :- module(st_render, [
     st_render_file/2,  % +File, +Data
     st_render_file/3,  % +File, +Data, +Stream
-    st_render_codes/3, % +Codes, +File, +Data
-    st_render_codes/4, % +Codes, +File, +Data, +Stream
+    st_render_codes/3, % +Codes, +Data, +File
+    st_render_codes/4, % +Codes, +Data, +Stream, +File
     st_enable_cache/1, % +Bool
     st_set_function/3, % +Name, +Arity, :Goal
     st_set_global/2    % +Name, +Value
@@ -159,6 +159,13 @@ render_scope([block(each(Path, Var), Nested)|Blocks], Scope, Stream, File):- !,
         render_scope(Blocks, Scope, Stream, File)
     ;   throw(error(path_in_each_not_list(Path)))).
     
+render_scope([block(each(Path, Var, IVar), Nested)|Blocks], Scope, Stream, File):- !,
+    scope_find(Path, Scope, Values),
+    (   is_list(Values)
+    ->  render_scope_values(Values, Var, IVar, 0, Nested, Scope, Stream, File),
+        render_scope(Blocks, Scope, Stream, File)
+    ;   throw(error(path_in_each_not_list(Path)))).
+    
 render_scope([text(Text)|Blocks], Scope, Stream, File):- !,
     write(Stream, Text),
     render_scope(Blocks, Scope, Stream, File).
@@ -195,15 +202,35 @@ call_function(Fun, Scope, Stream):-
         write(Stream, Out)
     ;   throw(error(no_function(Name/Arity)))).
 
-cond_eval(Left=Right, Scope):-
+cond_eval(Left = Right, Scope):-
     expr_eval(Left, Scope, LeftValue),
     expr_eval(Right, Scope, RightValue), !,
     LeftValue = RightValue.
     
-cond_eval(Left\=Right, Scope):-
+cond_eval(Left \= Right, Scope):-
     expr_eval(Left, Scope, LeftValue),
     expr_eval(Right, Scope, RightValue), !,
     LeftValue \= RightValue.
+    
+cond_eval(Left < Right, Scope):-
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
+    LeftValue < RightValue.
+    
+cond_eval(Left > Right, Scope):-
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
+    LeftValue > RightValue.
+    
+cond_eval(Left =< Right, Scope):-
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
+    LeftValue =< RightValue.
+    
+cond_eval(Left >= Right, Scope):-
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue), !,
+    LeftValue >= RightValue.
 
 cond_eval(','(Left, Right), Scope):-
     cond_eval(Left, Scope),
@@ -246,6 +273,17 @@ render_scope_values([Value|Values], Var, Nested, Scope, Stream, File):-
     render_scope_values(Values, Var, Nested, Scope, Stream, File).
     
 render_scope_values([], _, _, _, _, _).
+
+% Same as above for 'each' loop with the index variable.
+
+render_scope_values([Value|Values], Var, IVar, Index, Nested, Scope, Stream, File):-
+    Entry =.. [Var, Value],
+    IEntry =.. [IVar, Index],
+    render_scope(Nested, [Entry,IEntry|Scope], Stream, File),
+    NIndex is Index + 1,
+    render_scope_values(Values, Var, IVar, NIndex, Nested, Scope, Stream, File).
+    
+render_scope_values([], _, _, _, _, _, _, _).
 
 % Finds value from the given
 % scope.
