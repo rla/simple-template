@@ -68,5 +68,17 @@ test(include_variable_scoped):-
     
 test(function):-
     test_rendering(st_render_codes("[[\\ test(1) ]]", [], 'dummy.html'), '2').
+    
+test(arith_plus):-
+    test_rendering(st_render_codes("[[? if(1+1=2) ]]t[[?]]", [], 'dummy.html'), 't').
+    
+test(arith_minus):-
+    test_rendering(st_render_codes("[[? if(1-1=0) ]]t[[?]]", [], 'dummy.html'), 't').
+    
+test(arith_mult):-
+    test_rendering(st_render_codes("[[? if(2*2=4) ]]t[[?]]", [], 'dummy.html'), 't').
+    
+test(arith_div):-
+    test_rendering(st_render_codes("[[? if(2/2=1) ]]t[[?]]", [], 'dummy.html'), 't').
 
 :- end_tests(st_render).

@@ -255,6 +255,9 @@ cond_eval(Left >= Right, Scope):-
     expr_eval(Left, Scope, LeftValue),
     expr_eval(Right, Scope, RightValue), !,
     LeftValue >= RightValue.
+    
+cond_eval(!(Cond), Scope):- !,
+    (cond_eval(Cond, Scope) -> fail ; true).
 
 cond_eval(','(Left, Right), Scope):-
     cond_eval(Left, Scope),
@@ -280,6 +283,30 @@ expr_eval(Var, Scope, Value):-
 
 expr_eval(Num, _, Num):-
     number(Num), !.
+
+% TODO special case for string
+% concatenation?
+% TODO all other Prolog operators as well.
+    
+expr_eval(Left + Right, Scope, Value):- !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue),
+    Value is LeftValue + RightValue.
+    
+expr_eval(Left - Right, Scope, Value):- !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue),
+    Value is LeftValue - RightValue.
+    
+expr_eval(Left / Right, Scope, Value):- !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue),
+    Value is LeftValue / RightValue.
+    
+expr_eval(Left * Right, Scope, Value):- !,
+    expr_eval(Left, Scope, LeftValue),
+    expr_eval(Right, Scope, RightValue),
+    Value is LeftValue * RightValue.
 
 expr_eval([Code|Codes], _, Atom):-
     number(Code), !,
