@@ -166,6 +166,14 @@ render_scope([block(each(Path, Var, IVar), Nested)|Blocks], Scope, Stream, File)
         render_scope(Blocks, Scope, Stream, File)
     ;   throw(error(path_in_each_not_list(Path)))).
     
+render_scope([block(each(Path, Var, IVar, LVar), Nested)|Blocks], Scope, Stream, File):- !,
+    scope_find(Path, Scope, Values),
+    (   is_list(Values)
+    ->  length(Values, Length),
+        render_scope_values(Values, Var, IVar, 0, LVar, Length, Nested, Scope, Stream, File),
+        render_scope(Blocks, Scope, Stream, File)
+    ;   throw(error(path_in_each_not_list(Path)))).
+
 render_scope([text(Text)|Blocks], Scope, Stream, File):- !,
     write(Stream, Text),
     render_scope(Blocks, Scope, Stream, File).
@@ -300,6 +308,18 @@ render_scope_values([Value|Values], Var, IVar, Index, Nested, Scope, Stream, Fil
     render_scope_values(Values, Var, IVar, NIndex, Nested, Scope, Stream, File).
     
 render_scope_values([], _, _, _, _, _, _, _).
+
+% Same as above for 'each' loop with the index and length variable.
+
+render_scope_values([Value|Values], Var, IVar, Index, LVar, Length, Nested, Scope, Stream, File):-
+    Entry =.. [Var, Value],
+    IEntry =.. [IVar, Index],
+    LEntry =.. [LVar, Length],
+    render_scope(Nested, [Entry,IEntry,LEntry|Scope], Stream, File),
+    NIndex is Index + 1,
+    render_scope_values(Values, Var, IVar, NIndex, LVar, Length, Nested, Scope, Stream, File).
+
+render_scope_values([], _, _, _, _, _, _, _, _, _).
 
 % Finds value from the given
 % scope.
