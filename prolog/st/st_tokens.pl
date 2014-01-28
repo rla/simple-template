@@ -2,23 +2,14 @@
     st_tokens/2
 ]).
 
-%% st_tokens(+Codes, -Tokens) is det.
+:- use_module(library(dcg/basics)).
+
+%! st_tokens(+Codes, -Tokens) is det.
 %
 % Tokenizes the given input into tokens.
-% Tokens are:
-% any atom - verbatim text;
-% out(Term) - output instruction (escaped);
-% out_unescaped(Term) - output instruction (unescaped);
-% block(Term) - block start;
-% end - block end;
-% include(location) - includes a file;
-% cond_if(Term) - conditional block start;
-% cond_else - start of conditional else;
-% cond_end - conditional block end;
-% call(Term) - function call.
 %
-% Throws error(invalid_input(Atom)) when
-% the atom in out/block instruction cannot
+% Throws error(invalid_input(String)) when
+% the input in out/block instruction cannot
 % be parsed into a Prolog term.
 
 st_tokens(Codes, Tokens):-
@@ -37,10 +28,9 @@ collapse([Token|Tokens]) -->
     
 collapse([]) --> [].
 
-text(text(Text)) -->
-    text_codes(Codes),
-    { atom_codes(Text, Codes) }.
-    
+text(text(Codes)) -->
+    text_codes(Codes).
+
 text_codes([Code|Codes]) -->
     text_code(Code),
     text_codes(Codes).
@@ -55,53 +45,69 @@ tokens([Token|Tokens]) -->
     token(Token),
     tokens(Tokens).
 
-tokens([]) -->
-    "".
+tokens([]) --> "".
 
 token(out(Term)) -->
-    "[[=", ws, term(Term), !.
+    "{{=", whites, term(Term), !.
     
 token(out_unescaped(Term)) -->
-    "[[-", ws, term(Term), !.
-    
-token(Term) -->
-    "[[*", ws, term(Term), !.
+    "{{-", whites, term(Term), !.
 
 token(end) -->
-    "[[:]]", !.
-    
-token(block(Term)) -->
-    "[[:", ws, term(Term), !.
-    
-token(cond_end) -->
-    "[[?]]", !.
-    
-token(cond_else) -->
-    "[[?", ws, "else", ws, "]]", !.
-    
-token(cond_if(Term)) -->
-    "[[?", ws, term(Term), !.
-    
-token(call(Term)) -->
-    "[[\\", ws, term(Term), !.
+    "{{", whites, "end", whites, "}}", !.
+
+token(else) -->
+    "{{", whites, "else", whites, "}}", !.
+
+% FIXME validate path spec.
+
+token(Token) -->
+    "{{", whites, "include ", whites, term(Term), !,
+    {
+        (   Term =.. [',', File, Var]
+        ->  Token = include(File, Var)
+        ;   Token = include(Term))
+    }.
+
+token(Token) -->
+    "{{", whites, "dynamic_include ", whites, term(Term), !,
+    {
+        (   Term = ','(File, Var)
+        ->  Token = dynamic_include(File, Var)
+        ;   Token = dynamic_include(Term))
+    }.
+
+token(if(Cond)) -->
+    "{{", whites, "if ", whites, term(Cond), !.
+
+token(else_if(Cond)) -->
+    "{{", whites, "else ", whites, "if ", whites, term(Cond), !.
+
+token(Token) -->
+    "{{", whites, "each ", whites, term(Term), !,
+    {
+        (   Term = ','(Items, ','(Item, ','(Index, Len)))
+        ->  Token = each(Items, Item, Index, Len)
+        ;   (   Term = ','(Items, ','(Item, Index))
+            ->  Token = each(Items, Item, Index)
+            ;   (   Term = ','(Items, Item)
+                ->  Token = each(Items, Item)
+                ;   throw(error(invalid_each(Term))))))
+    }.
 
 token(Code) -->
     [Code].
-    
+
 term(Term) -->
     term_codes(Codes),
     {
-        atom_codes(Atom, Codes),
-        (   read_term_from_atom(Atom, Term, [])
+        (   read_term_from_codes(Codes, Term, [])
         ->  true
-        ;   throw(error(invalid_input(Atom))))
+        ;   string_codes(String, Codes),
+            throw(error(invalid_input(String))))
     }.
-    
-term_codes([]) --> "]]", !.
+
+term_codes([]) --> "}}", !.
 
 term_codes([Code|Codes]) -->
     [Code], term_codes(Codes).
-
-ws --> " ", !, ws.
-    
-ws --> "".

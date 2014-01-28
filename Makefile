@@ -1,5 +1,4 @@
 test:
-
-	swipl -s tests/tests -g run_tests -t halt
+	swipl -s tests/tests.pl -g run_tests,halt -t 'halt(1)'
 
 .PHONY: test
