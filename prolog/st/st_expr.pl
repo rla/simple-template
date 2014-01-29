@@ -112,6 +112,28 @@ st_eval(Left >= Right, Scope, Value):- !,
     ->  Value = 1
     ;   Value = 0).
 
+% Logical and.
+
+st_eval(','(Left, Right), Scope, Value):- !,
+    st_eval_bool(Left, Scope, LeftValue),
+    (   LeftValue = 0
+    ->  Value = 0
+    ;   st_eval_bool(Right, Scope, RightValue),
+        (   RightValue = 0
+        ->  Value = 0
+        ;   Value = 1)).
+
+% Logical or.
+
+st_eval(';'(Left, Right), Scope, Value):- !,
+    st_eval_bool(Left, Scope, LeftValue),
+    (   LeftValue = 1
+    ->  Value = 1
+    ;   st_eval_bool(Right, Scope, RightValue),
+        (   RightValue = 1
+        ->  Value = 1
+        ;   Value = 0)).
+
 % Unary minus.
 
 st_eval(-(Expr), Scope, Value):- !,

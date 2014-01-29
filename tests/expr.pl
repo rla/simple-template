@@ -31,6 +31,30 @@ test(bool_neg_3):-
 test(bool_neg_4):-
     st_eval(\+ 0, _{}, 1).
 
+test(bool_and_1):-
+    st_eval((0, 0), _{}, 0).
+
+test(bool_and_2):-
+    st_eval((1, 0), _{}, 0).
+
+test(bool_and_3):-
+    st_eval((0, 1), _{}, 0).
+
+test(bool_and_4):-
+    st_eval((1, 1), _{}, 1).
+
+test(bool_or_1):-
+    st_eval((0; 0), _{}, 0).
+
+test(bool_or_2):-
+    st_eval((1; 0), _{}, 1).
+
+test(bool_or_3):-
+    st_eval((0; 1), _{}, 1).
+
+test(bool_or_4):-
+    st_eval((1; 1), _{}, 1).
+
 test(less_than_true):-
     st_eval(1 < 2, _{}, 1).
 

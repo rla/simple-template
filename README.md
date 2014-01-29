@@ -48,7 +48,7 @@ There are 4 types of processing instructions.
 ### Output
 
 There are two output instructions. `{{= expression }}` outputs the expression
-value and escapes special HTML characters. `{{- expression }}` outputs the
+value and escapes the special HTML characters. `{{- expression }}` outputs the
 expression value but does not escape the output. There must be no space
 between `{{` and `=` or `-`.
 
@@ -58,7 +58,7 @@ Includes use the syntax `{{ include path/to/file }}`. The path should be relativ
 The relative path is resolved against the current file location and the currently
 set file extension is added. All values from the current scope are available to
 the included file. There is also `{{ include path/to/file, expression }}` that
-sets the scope of included file to the value of the expression (must be a dict).
+sets the scope of the included file to the value of the expression (must be a dict).
 
 Dynamic includes use the syntax `{{ dynamic_include expression }}`. The value of
 the expression must be a file path specifier. There is also a variant with the
@@ -79,7 +79,7 @@ Conditional instructions have the following syntax:
     ...
     {{ end }}
 
-`else if` and `else` parts are optiona.
+`else if` and `else` parts are optional.
 
 ### Each loop
 
@@ -122,8 +122,8 @@ The `.` operator is used for accessing values from dicts. Internally the
 will work as intended.
 
 Compound terms that match none of the operators and constructs described above are
-treated as user-defined function calls. An error is thrown when there is no such function
-defined (see below).
+treated as user-defined (see below) function calls. An error is thrown when there is no such function
+defined.
 
 A special expression is `atom(something)`. Its value is atom `something`. This
 is added to differentiate them from other atoms which are otherwise interpreted
