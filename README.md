@@ -1,53 +1,99 @@
 # simple-template
 
-Text (including HTML) template processor for Prolog.
+Text (HTML) template processor for Swi-Prolog. Works
+best for cases when you have mainly static HTML.
 
 ## Example
 
-Input file:
+Input markup (`test.html` file):
 
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>[[=title]]</title>
-        </head>
-        <body>
-            [[:each(items, item)]]            
-                <h1>[[=item:title]]</h1>            
-                <div class="content">[[-item:content]]</div>
-            [[:]]
-        </body>
-    </html>
+    <h1>{{= title }}</h1>
+    {{ each items, item }}
+        <h2>{{= item.title }}</h2>
+        <div class="content">{{- item.content }}</div>
+    {{ end }}
 
-Rendering:
+rendering with data:
 
-    st_render_file('test.html', [
-        title('Hello'),
-        items([
-            [title('Item 1'), content('Abc 1')],
-            [title('Item 2'), content('Abc 2')]
-        ])
-    ]).
+    :- use_module(library(st/st_file)).
+    :- use_module(library(st/st_render)).
 
-Output:
+    :- st_set_extension(html).
 
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>Hello</title>
-        </head>
-        <body>
-                        
-                <h1>Item 1</h1>            
-                <div class="content">Abc 1</div>
-                        
-                <h1>Item 2</h1>            
-                <div class="content">Abc 2</div>
-            
-        </body>
-    </html>
+    st_render_file(test, _{
+        title: 'Hello',
+        items: [
+            _{ title: 'Item 1', content: 'Abc 1' },
+            _{ title: 'Item 1', content: 'Abc 2' }
+        ]
+    }).
 
-### Expressions
+output:
+
+    <h1>Hello</h1>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 1</div>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 2</div>
+
+## Processing instructions
+
+Processing instructions start with double opening curly braces (`{{`) and
+end with double closing curly braces (`}}`).
+
+There are 4 types of processing instructions.
+
+### Output
+
+There are two output instructions. `{{= expression }}` outputs the expression
+value and escapes special HTML characters. `{{- expression }}` outputs the
+expression value but does not escape the output. There must be no space
+between `{{` and `=` or `-`.
+
+### Includes
+
+Includes use the syntax `{{ include path/to/file }}`. The path should be relative.
+The relative path is resolved against the current file location and the currently
+set file extension is added. All values from the current scope are available to
+the included file. There is also `{{ include path/to/file, expression }}` that
+sets the scope of included file to the value of the expression (must be a dict).
+
+Dynamic includes use the syntax `{{ dynamic_include expression }}`. The value of
+the expression must be a file path specifier. There is also a variant with the
+scope expression.
+
+Includes are currently processed at runtime. You should enable caching if you include
+inside a loop otherwise the included file is parsed over and over again.
+
+### Conditionals
+
+Conditional instructions have the following syntax:
+
+    {{ if cond_expression1 }}
+    ...
+    {{ else if cond_expression2 }}
+    ...
+    {{ else }}
+    ...
+    {{ end }}
+
+`else if` and `else` parts are optiona.
+
+### Each loop
+
+The each loop allows to process lists. The syntax for each loop:
+
+    {{ each expression, item_var, index_var, len_var }}
+    ...
+    {{ end }}
+
+The value of expression must be a list. `item_var`, `index_var` and `len_var`
+refer to current item, current item index and the length of the list.
+`index_var` and `len_var` are optional.
+
+## Expressions
 
 Expressions are ground Prolog terms with the interpretation
 described below.
@@ -56,51 +102,62 @@ In most contexts, atoms are interpreted as scope entries ("variables").
 An error is thrown when there is no suitable entry.
 
 The following arithmetic operators and functions are supported:
+`-, +, *, /, mod, rem, //, div, abs, sign, max, min, random, round, truncate, floor, ceiling, **, ^`.
 
 Boolean expressions include modified unification using the `=` operator. The
 operator provides coercion from atom to string when either of operands is an atom
 and the other is a string. For other types, no coercion is applied. Supported boolean
-operators are: ``.
+operators are: `,` (logical and), `;` (logical or) and `\+` (logical negation). Supported
+comparison operator are: `>, <, >=, =<,`.
 
 Conditional expression `if(expression, true_expr, false_expr)` value is the value of
-`true_expr` when the `expression` evaluates to anything but 0. Otherwise the
+`true_expr` when the `expression` evaluates to anything but 0 or `false`. Otherwise the
 value is the value of `false_expr`.
 
 The `+` operator is overloaded to provide string or atom concatenation when
-the left side of the operator is an atom or string.
+the left side of the operator is an atom or string. The result is string.
+
+The `.` operator is used for accessing values from dicts. Internally the
+`./3` predicate is used which means that user-defined functions on dicts
+will work as intended.
 
 Compound terms that match none of the operators and constructs described above are
 treated as user-defined function calls. An error is thrown when there is no such function
 defined (see below).
 
-### Includes
+A special expression is `atom(something)`. Its value is atom `something`. This
+is added to differentiate them from other atoms which are otherwise interpreted
+as scope entries.
 
-Includes use the syntax `{{ include(path/to/file) }}`. The path should be relative.
-The relative path is resolved against the current file location and the file
-extension is added. Includes are
-processed at runtime. This means that recursive includes are possible provided
-that they are wrapped into if/else block that terminates the recursion at some point.
+## Global constants
 
-### Global constants
+Global constants can be set with the `st_set_global/2` predicate by importing
+the `st_expr` module. When a scope contains an
+entry with the same name as a global then the local value is preferred.
 
-Global constants can be set with the `st_set_global/2`. When a scope contains an
-entry with the same name as a global then the scope value is preferred.
+## User-defined functions
 
-### User-defined functions
+User-defined functions can be set with the `st_set_function(Name, Arity, Goal)`
+predicate in the `st_expr` module. Arity refers to the function arity. Goal must
+have arity Arity + 1.
 
-### HTML escaping
+## Caching
 
-HTML escaping is automatically applied to output statements beginning with the `{{=` token.
-Escaped output is safe to be used inside HTML elements and attribute values. There must be
-no space between `{{` and `=`.
+Template caching is enabled by importing the `st_file` module and calling
+the `st_enable_cache` predicate. This makes the system cache parsed templates.
+This is particulary useful when using includes in loops.
 
-### Caching
+## Whitespace removal
 
-## TODO
+Some (but not all) whitespace is removed by calling the `st_enable_strip_white`
+predicate from the `st_parse` module. Line indents and some duplicate line ends
+are removed from the output. Whitespace removal is parse-time and does not
+incur any runtime penalty.
 
- * Includes
- * Caching
- * API documentation
+## Bug reports/feature requests
+
+Please send bug reports/feature request through the GitHub
+project [page](https://github.com/rla/simple-template).
 
 ## License
 

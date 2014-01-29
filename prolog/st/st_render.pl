@@ -191,7 +191,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = if(Cond, True, False), !,
     st_eval(Cond, Scope, CondValue),
-    (   CondValue = 0
+    (   (CondValue = 0 ; CondValue = false)
     ->  render_scope(False, Scope, Stream, File)
     ;   render_scope(True, Scope, Stream, File)),
     render_scope(Blocks, Scope, Stream, File).

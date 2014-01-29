@@ -280,7 +280,7 @@ st_eval(Compound, Scope, Value):-
 
 st_eval_bool(Expr, Scope, Bool):-
     st_eval(Expr, Scope, Value),
-    (   Value = 0
+    (   (Value = 0 ; Value = false)
     ->  Bool = 0
     ;   Bool = 1).
 

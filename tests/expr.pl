@@ -181,7 +181,10 @@ test(global_shadow):-
 test(condition_true):-
     st_eval(if(2, 3, 4), _{}, 3).
 
-test(condition_false):-
+test(condition_false_1):-
     st_eval(if(0, 3, 4), _{}, 4).
+
+test(condition_false_2):-
+    st_eval(if(a, 3, 4), _{ a: false }, 4).
 
 :- end_tests(st_expr).
