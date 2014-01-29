@@ -132,12 +132,13 @@ st_eval(Term, Scope, Value):-
     '.'(Tmp, Name, Value).
 
 % Addition. String concatenation.
-% FIXME overload.
 
 st_eval(Left + Right, Scope, Value):- !,
     st_eval(Left, Scope, LeftValue),
     st_eval(Right, Scope, RightValue),
-    Value is LeftValue + RightValue.
+    (   number(LeftValue)
+    ->  Value is LeftValue + RightValue
+    ;   string_concat(LeftValue, RightValue, Value)).
 
 % Substraction.
 
@@ -265,6 +266,11 @@ st_eval(if(Cond, True, False), Scope, Value):- !,
     (   CondValue = 0
     ->  st_eval(False, Scope, Value)
     ;   st_eval(True, Scope, Value)).
+
+% "Literal" atom.
+
+st_eval(atom(Atom), _, Atom):-
+    atom(Atom), !.
 
 % Function calls.
 

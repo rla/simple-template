@@ -99,6 +99,12 @@ test(dict_funcall):-
 test(addition):-
     st_eval(2 + 1, _{}, 3).
 
+test(concat_atom):-
+    st_eval(atom(abc) + 1, _{}, abc1).
+
+test(concat_string):-
+    st_eval("abc" + 1, _{}, "abc1").
+
 test(substraction):-
     st_eval(3 - 1, _{}, 2).
 
