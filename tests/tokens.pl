@@ -44,4 +44,7 @@ test(each_3):-
 test(invalid):-
     catch((st_tokens(`{{ invalid`, _), fail), error(invalid_instruction(_)), true).
 
+test(nonground):-
+    catch((st_tokens(`{{= A }}`, _), fail), error(non_ground_expression(_)), true).
+
 :- end_tests(st_tokens).

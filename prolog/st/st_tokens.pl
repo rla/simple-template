@@ -115,7 +115,9 @@ term(Term) -->
     term_codes(Codes),
     {
         (   read_term_from_codes(Codes, Term, [])
-        ->  true
+        ->  (   ground(Term)
+            ->  true
+            ;   throw(error(non_ground_expression(Term))))
         ;   string_codes(String, Codes),
             throw(error(invalid_input(String))))
     }.
