@@ -41,4 +41,7 @@ test(each_2):-
 test(each_3):-
     st_tokens(`{{ each items, item, index, len }}`, [each(items, item, index, len)]).
 
+test(invalid):-
+    catch((st_tokens(`{{ invalid`, _), fail), error(invalid_instruction(_)), true).
+
 :- end_tests(st_tokens).

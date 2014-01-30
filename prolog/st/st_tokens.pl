@@ -100,6 +100,14 @@ token(Token) -->
                 ;   throw(error(invalid_each(Term))))))
     }.
 
+token(_) -->
+    "{{", whites, [C1,C2,C3,C4,C5],
+    {
+        atom_codes(Atom, [C1,C2,C3,C4,C5]),
+        atom_concat(Atom, '...', At),
+        throw(error(invalid_instruction(At)))
+    }.
+
 token(Code) -->
     [Code].
 
