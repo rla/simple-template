@@ -154,6 +154,12 @@ predicate from the `st_parse` module. Line indents and some duplicate line ends
 are removed from the output. Whitespace removal is parse-time and does not
 incur any runtime penalty.
 
+## Installation
+
+This package requires Swi-Prolog 7.x.
+
+    pack_install('http://packs.rlaanemets.com/simple-template/simple_template-*.tgz').
+
 ## API documentation
 
 See <http://packs.rlaanemets.com/simple-template/doc/>.
