@@ -7,6 +7,11 @@
     st_render_codes/4   % +Codes, +Data, +Stream, +File
 ]).
 
+/** <module> Template renderer
+
+Turns template together with data into output.
+*/
+
 :- use_module(library(readutil)).
 :- use_module(library(error)).
 :- use_module(library(debug)).

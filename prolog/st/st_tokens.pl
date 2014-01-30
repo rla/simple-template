@@ -2,6 +2,11 @@
     st_tokens/2
 ]).
 
+/** <module> Template tokenizer
+
+Recognizes tokens from symbol codes.
+*/
+
 :- use_module(library(dcg/basics)).
 
 %! st_tokens(+Codes, -Tokens) is det.

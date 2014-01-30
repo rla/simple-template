@@ -4,6 +4,11 @@
     st_disable_strip_white/0
 ]).
 
+/** <module> Template parser
+
+Parses a list of tokens into a template structure.
+*/
+
 :- use_module(st_tokens).
 :- use_module(st_white).
 

@@ -8,6 +8,11 @@
     st_resolve_include/3 % +Include, +File, -AbsFile
 ]).
 
+/** <module> File handling
+
+Handles file paths and caching.
+*/
+
 :- dynamic(template/2).
 
 %! st_cached(+File, -Template) is semidet.

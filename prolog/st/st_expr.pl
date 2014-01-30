@@ -4,6 +4,12 @@
     st_set_global/2    % +Name, +Value
 ]).
 
+/** <module> Expression evaluator
+
+Evaluates expression. Allows registering of
+global constants and user-defined functions.
+*/
+
 :- use_module(library(error)).
 
 :- dynamic(user_function/3).

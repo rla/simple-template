@@ -2,6 +2,11 @@
     st_write_escape/2 % +Stream, +Text
 ]).
 
+/** <module> HTML escaping
+
+Escapes symbols that have special meaning in HTML.
+*/
+
 %! st_write_escape(+Stream, +Text) is det.
 %
 % Writes text into Stream by escaping some

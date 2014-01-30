@@ -2,7 +2,16 @@
     st_strip_indent/2
 ]).
 
+/** <module> Whitespace handling
+
+Removes indents and collapses extra line ends.
+*/
+
 :- use_module(library(dcg/basics)).
+
+%! st_strip_indent(+Codes, -StrippedCodes) is det.
+%
+% Removes indents and collapses extra line ends.
 
 st_strip_indent(Codes, Stripped):-
     phrase(strip_rest(Tmp), Codes),
