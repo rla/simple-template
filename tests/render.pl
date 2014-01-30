@@ -89,6 +89,19 @@ test(include_variable_scoped):-
     test_rendering(st_render_string("{{ include tests/included_variable, b }}",
         _{ b: _{ a: 1 } }, dummy), "1").
 
+test(dynamic_include):-
+    st_set_extension(html),
+    test_rendering(st_render_string("{{ dynamic_include file }}",
+        _{ file: tests/included }, dummy), "i").
+
+test(dynamic_include_variable):-
+    test_rendering(st_render_string("{{ dynamic_include file }}",
+        _{ a: 1, file: tests/included_variable }, dummy), "1").
+
+test(dynamic_include_variable_scoped):-
+    test_rendering(st_render_string("{{ dynamic_include file, b }}",
+        _{ b: _{ a: 1 }, file: tests/included_variable }, dummy), "1").
+
 test(white_inline):-
     st_enable_strip_white,
     test_rendering(st_render_string("abc {{= a }} def",

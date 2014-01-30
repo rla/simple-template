@@ -111,7 +111,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
     render_scope(Blocks, Scope, Stream, File).
 
 % Renders each loop with element variable.
-% Example: {{ each(items, item) }}.
+% Example: {{ each items, item }}.
 
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = each(Expr, Var, Nested), !,
@@ -125,7 +125,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
     ;   throw(error(expr_in_each_not_list(Expr)))).
 
 % Renders each loop with element and index variables.
-% Example: {{ each(items, item, i) }}.
+% Example: {{ each items, item, i }}.
 
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = each(Expr, Var, IVar, Nested), !,
@@ -145,7 +145,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
 
 % Renders each loop with element, index and length
 % variables.
-% Example: {{ each(items, item, i, len) }}.
+% Example: {{ each items, item, i, len }}.
 
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = each(Expr, Var, IVar, LVar, Nested), !,
@@ -172,7 +172,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
     write(Stream, Text),
     render_scope(Blocks, Scope, Stream, File).
 
-% Renders include block {{ include(path/to/file) }}.
+% Renders include block {{ include path/to/file }}.
 
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = include(Path), !,
@@ -181,7 +181,7 @@ render_scope([Block|Blocks], Scope, Stream, File):-
     render_scope(Blocks, Scope, Stream, File).
 
 % Renders include with specific scope variable.
-% Example: {{ include(path/to/file, variable) }}.
+% Example: {{ include path/to/file, variable }}.
     
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = include(Path, Var), !,
@@ -190,8 +190,29 @@ render_scope([Block|Blocks], Scope, Stream, File):-
     render_file(AbsFile, Value, Stream),
     render_scope(Blocks, Scope, Stream, File).
 
+% Renders dynamic include block.
+% Example: {{ dynamic_include file }}.
+
+render_scope([Block|Blocks], Scope, Stream, File):-
+    Block = dynamic_include(FileVar), !,
+    st_eval(FileVar, Scope, Path),
+    st_resolve_include(Path, File, AbsFile),
+    render_file(AbsFile, Scope, Stream),
+    render_scope(Blocks, Scope, Stream, File).
+
+% Renders dynamic include with specific scope variable.
+% Example: {{ dynamic_include file variable }}.
+
+render_scope([Block|Blocks], Scope, Stream, File):-
+    Block = dynamic_include(FileVar, Var), !,
+    st_eval(FileVar, Scope, Path),
+    st_resolve_include(Path, File, AbsFile),
+    st_eval(Var, Scope, Value),
+    render_file(AbsFile, Value, Stream),
+    render_scope(Blocks, Scope, Stream, File).
+
 % Renders conditional block.
-% Example: {{ if(Cond) }} a {{ else }} b {{ end }}
+% Example: {{ if Cond }} a {{ else }} b {{ end }}
 
 render_scope([Block|Blocks], Scope, Stream, File):-
     Block = if(Cond, True, False), !,
