@@ -154,6 +154,21 @@ predicate from the `st_parse` module. Line indents and some duplicate line ends
 are removed from the output. Whitespace removal is parse-time and does not
 incur any runtime penalty.
 
+## API documentation
+
+See <http://packs.rlaanemets.com/simple-template/doc/>.
+
+## Running tests
+
+In the package root, insert into swipl:
+
+    [tests/tests].
+    run_tests.
+
+Or if you cloned the repo:
+
+    make test
+
 ## Bug reports/feature requests
 
 Please send bug reports/feature request through the GitHub
