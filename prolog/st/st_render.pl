@@ -4,7 +4,8 @@
     st_render_file/2,   % +File, +Data
     st_render_file/3,   % +File, +Data, +Stream
     st_render_codes/3,  % +Codes, +Data, +File
-    st_render_codes/4   % +Codes, +Data, +Stream, +File
+    st_render_codes/4,  % +Codes, +Data, +Stream, +File
+    st_set_encoding/1   % +Atom
 ]).
 
 /** <module> Template renderer
@@ -40,7 +41,7 @@ st_render_string(String, Data, Stream, File):-
     string_codes(String, Codes),
     st_render_codes(Codes, Data, Stream, File).
 
-%% st_render_file(+File, +Data) is det.
+%! st_render_file(+File, +Data) is det.
 %
 % Renders given file with the given data.
 % Calls st_render_file/3 with the current stream.
@@ -50,7 +51,7 @@ st_render_file(File, Data):-
     current_output(Stream),
     st_render_file(File, Data, Stream).
 
-%% st_render_file(+File, +Data, +Stream) is det.
+%! st_render_file(+File, +Data, +Stream) is det.
 %
 % Renders given file with the given data
 % into the stream.
@@ -58,7 +59,7 @@ st_render_file(File, Data):-
 st_render_file(File, Data, Stream):-
     render_file(File, Data, Stream).
 
-%% st_render_codes(+Codes, +Data, +File) is det.
+%! st_render_codes(+Codes, +Data, +File) is det.
 %
 % Renders codes with the given data.
 % Calls st_render_codes/3 with the current stream.
@@ -67,7 +68,7 @@ st_render_codes(Codes, Data, File):-
     current_output(Stream),
     st_render_codes(Codes, Data, Stream, File).
 
-%% st_render_codes(+Codes, +Data, +Stream, +File) is det.
+%! st_render_codes(+Codes, +Data, +Stream, +File) is det.
 %
 % Renders codes with the given data into the stream.
 % File argument is used for resolving includes.
@@ -81,6 +82,22 @@ render_file(File, Data, Stream):-
     template(AbsFile, Templ),
     render_scope(Templ, Data, Stream, AbsFile).
 
+:- dynamic(st_encoding/1).
+
+%! st_set_encoding(+Encoding) is det.
+%
+% Sets the encoding used for opening
+% template files. Allowed values are
+% same as encoding option values for
+% read_file_to_codes/3. When no encoding
+% is set, default behavior is used. No
+% encoding option is then passed to
+% read_file_to_codes/3.
+
+st_set_encoding(Encoding):-
+    retractall(st_encoding(_)),
+    assertz(st_encoding(Encoding)).
+
 % Reads template from file.
 % Uses cached template when
 % it is available.
@@ -88,7 +105,10 @@ render_file(File, Data, Stream):-
 template(File, Templ):-
     (   st_cached(File, Templ)
     ->  true
-    ;   read_file_to_codes(File, Codes, []),
+    ;   (   st_encoding(Encoding)
+        ->  Options = [encoding(Encoding)]
+        ;   Options = []),
+        read_file_to_codes(File, Codes, Options),
         st_parse(Codes, Templ),
         st_cache_put(File, Templ)).
 

@@ -154,6 +154,12 @@ predicate from the `st_parse` module. Line indents and some duplicate line ends
 are removed from the output. Whitespace removal is parse-time and does not
 incur any runtime penalty.
 
+## Encoding
+
+Encoding for template files can be specified with the `st_set_encoding/1` predicate
+in the `st_render` module. Accepted values are all that are accepted by the `encoding`
+option of the `read_file_to_codes/3` predicate.
+
 ## Installation
 
 This package requires Swi-Prolog 7.x.
@@ -179,6 +185,11 @@ Or if you cloned the repo:
 
 Please send bug reports/feature request through the GitHub
 project [page](https://github.com/rla/simple-template).
+
+## Changelog
+
+ * 2014-03-02 version 0.1.0. Provided st_set_encoding/1.
+ * 2014-01-30 version 0.0.1
 
 ## License
 
