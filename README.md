@@ -136,7 +136,7 @@ the expressions above.
 
 There are three single-argument functions to encode URI parts: `encode_path`,
 `encode_query_value` and `encode_fragment`. These call
-[http://swi-prolog.org/pldoc/doc_for?object=uri_encoded/3](uri_encoded/3) with
+[uri_encoded/3](http://swi-prolog.org/pldoc/doc_for?object=uri_encoded/3) with
 the respective first argument.
 
 ## Global constants
