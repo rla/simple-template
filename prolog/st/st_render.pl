@@ -21,6 +21,7 @@ Turns template together with data into output.
 :- use_module(st_expr).
 :- use_module(st_file).
 :- use_module(st_escape).
+:- use_module(st_funs).
 
 %! st_render_string(+String, +Data, +File) is det.
 %

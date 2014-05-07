@@ -17,7 +17,13 @@ test(number):-
     st_eval(123, _{}, 123).
 
 test(variable):-
-    st_eval(a, _{ a:123 }, 123).
+    st_eval(a, _{ a: 123 }, 123).
+
+test(list_empty):-
+    st_eval([], _{}, []).
+
+test(list_non_empty):-
+    st_eval([a], _{ a: 123 }, [123]).
 
 test(bool_neg_1):-
     st_eval(\+ 1, _{}, 0).

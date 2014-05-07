@@ -300,6 +300,12 @@ st_eval(if(Cond, True, False), Scope, Value):- !,
 st_eval(atom(Atom), _, Atom):-
     atom(Atom), !.
 
+% List literal
+
+st_eval(List, Scope, Value):-
+    is_list(List), !,
+    st_eval_list(List, Scope, Value).
+
 % Function calls.
 
 st_eval(Compound, Scope, Value):-
