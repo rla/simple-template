@@ -129,6 +129,16 @@ A special expression is `atom(something)`. Its value is atom `something`. This
 is added to differentiate them from other atoms which are otherwise interpreted
 as scope entries.
 
+Literal lists work as expected with the elements having the interpretation as
+the expressions above.
+
+## Built-in functions
+
+There are three single-argument functions to encode URI parts: `encode_path`,
+`encode_query_value` and `encode_fragment`. These call
+[http://swi-prolog.org/pldoc/doc_for?object=uri_encoded/3](uri_encoded/3) with
+the respective first argument.
+
 ## Global constants
 
 Global constants can be set with the `st_set_global/2` predicate by importing
@@ -188,6 +198,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
+ * 2014-05-07 version 0.2.0. Literal lists, encode_* functions.
  * 2014-03-02 version 0.1.0. Provided st_set_encoding/1.
  * 2014-01-30 version 0.0.1
 
