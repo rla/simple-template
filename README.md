@@ -151,6 +151,11 @@ User-defined functions can be set with the `st_set_function(Name, Arity, Goal)`
 predicate in the `st_expr` module. Arity refers to the function arity. Goal must
 have arity Arity + 1.
 
+## Comments
+
+Comment blocks start with `{{%` and end with `}}`. Comments do not appear
+in the output.
+
 ## Caching
 
 Template caching is enabled by importing the `st_file` module and calling

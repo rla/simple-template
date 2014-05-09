@@ -46,11 +46,18 @@ text_codes([Code]) -->
 text_code(Code) -->
     [Code], { number(Code) }.
 
+tokens(Tokens) -->
+    comment, !,
+    tokens(Tokens).
+
 tokens([Token|Tokens]) -->
-    token(Token),
+    token(Token), !,
     tokens(Tokens).
 
 tokens([]) --> "".
+
+comment -->
+    "{{%", string(_), "}}".
 
 token(out(Term)) -->
     "{{=", whites, term(Term), !.

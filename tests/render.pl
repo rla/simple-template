@@ -127,4 +127,7 @@ test(white_disabled):-
     test_rendering(st_render_string("abc\n   \n   {{= a }}\n\n def",
         _{ a: 1 }, dummy), "abc\n   \n   1\n\n def").
 
+test(comment):-
+    test_rendering(st_render_string("{{= a }}{{% this is a comment}}", _{ a: 123 }, dummy), "123").
+
 :- end_tests(st_render).

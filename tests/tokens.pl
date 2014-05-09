@@ -47,4 +47,7 @@ test(invalid):-
 test(nonground):-
     catch((st_tokens(`{{= A }}`, _), fail), error(non_ground_expression(_)), true).
 
+test(comment):-
+    st_tokens(`{{% this is a comment }}`, []).
+
 :- end_tests(st_tokens).
