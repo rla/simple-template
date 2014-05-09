@@ -100,6 +100,15 @@ st_eval(Left = Right, Scope, Value):- !,
     ->  Value = 1
     ;   Value = 0).
 
+% Inequality.
+
+st_eval(Left \= Right, Scope, Value):- !,
+    st_eval(Left, Scope, LeftValue),
+    st_eval(Right, Scope, RightValue),
+    (   test_equality(LeftValue, RightValue)
+    ->  Value = 0
+    ;   Value = 1).
+
 % Less-than-equal.
 
 st_eval(Left =< Right, Scope, Value):- !,

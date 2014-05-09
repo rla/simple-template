@@ -106,9 +106,9 @@ The following arithmetic operators and functions are supported:
 
 Boolean expressions include modified unification using the `=` operator. The
 operator provides coercion from atom to string when either of operands is an atom
-and the other is a string. For other types, no coercion is applied. Supported boolean
-operators are: `,` (logical and), `;` (logical or) and `\+` (logical negation). Supported
-comparison operator are: `>, <, >=, =<,`.
+and the other is a string. For other types, no coercion is applied. Similarily works
+the `\=` operator. Supported boolean operators are: `,` (logical and), `;` (logical or)
+and `\+` (logical negation). Supported comparison operator are: `>, <, >=, =<,`.
 
 Conditional expression `if(expression, true_expr, false_expr)` value is the value of
 `true_expr` when the `expression` evaluates to anything but 0 or `false`. Otherwise the

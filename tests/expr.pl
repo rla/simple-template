@@ -94,6 +94,18 @@ test(equality_6):-
 test(equality_7):-
     st_eval(1 = "abc", _{}, 0).
 
+test(inequality_1):-
+    st_eval(1 \= 0, _{}, 1).
+
+test(inequality_2):-
+    st_eval(1 \= 1, _{}, 0).
+
+test(inequality_3):-
+    st_eval(atom(a) \= "b", _{}, 1).
+
+test(inequality_4):-
+    st_eval(atom(a) \= "a", _{}, 0).
+
 test(less_than_equal_true):-
     st_eval(1 =< 2, _{}, 1).
 
