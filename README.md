@@ -160,7 +160,8 @@ in the output.
 
 Template caching is enabled by importing the `st_file` module and calling
 the `st_enable_cache` predicate. This makes the system cache parsed templates.
-This is particulary useful when using includes in loops.
+This is particulary useful when using includes in loops. To purge the current
+cache contents, use the `st_cache_invalidate` predicate.
 
 ## Whitespace removal
 

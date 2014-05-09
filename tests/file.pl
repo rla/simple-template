@@ -38,4 +38,15 @@ test(cache_cleaned):-
     ->  fail
     ;   true).
 
+test(cache_invalidate):-
+    st_enable_cache,
+    st_cache_put(test, []),
+    (   st_cached(test, [])
+    ->  true
+    ;   fail),
+    st_cache_invalidate,
+    (   st_cached(test, _)
+    ->  fail
+    ;   true).
+
 :- end_tests(st_file).

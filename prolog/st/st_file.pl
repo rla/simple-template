@@ -1,11 +1,12 @@
 :- module(st_file, [
     st_enable_cache/0,
     st_disable_cache/0,
-    st_cached/2,         % +File, -Template
-    st_set_extension/1,  % +Atom
-    st_resolve/2,        % +File, -AbsFile
-    st_cache_put/2,      % +File, +Template
-    st_resolve_include/3 % +Include, +File, -AbsFile
+    st_cached/2,           % +File, -Template
+    st_set_extension/1,    % +Atom
+    st_resolve/2,          % +File, -AbsFile
+    st_cache_put/2,        % +File, +Template
+    st_cache_invalidate/0,
+    st_resolve_include/3   % +Include, +File, -AbsFile
 ]).
 
 /** <module> File handling
@@ -33,12 +34,14 @@ cached_unsafe(File, Template):-
 %
 % Sets the file name extension.
 % Calling it multiple times makes
-% it use the last value.
+% it use the last value. Purges
+% template cache.
 
 st_set_extension(Ext):-
     must_be(atom, Ext),
     retractall(extension(_)),
-    assertz(extension(Ext)).
+    assertz(extension(Ext)),
+    st_cache_invalidate.
 
 current_extension(Ext):-
     (   extension(Ext)
@@ -46,6 +49,13 @@ current_extension(Ext):-
     ;   throw(error(extension_not_set))).
 
 :- dynamic(cache_enabled/0).
+
+%! st_cache_invalidate is det.
+%
+% Purges all cache entries.
+
+st_cache_invalidate:-
+    retractall(template(_, _)).
 
 %! st_enable_cache is det.
 %
