@@ -204,6 +204,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
+ * 2014-05-09 version 0.3.0. Provide st_cache_invalidate/0, \= operator, comments.
  * 2014-05-07 version 0.2.0. Literal lists, encode_* functions.
  * 2014-03-02 version 0.1.0. Provided st_set_encoding/1.
  * 2014-01-30 version 0.0.1
