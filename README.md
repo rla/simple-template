@@ -3,6 +3,8 @@
 Text (HTML) template processor for Swi-Prolog. Works
 best for cases when you have mainly static HTML.
 
+[![Build Status](https://travis-ci.org/rla/simple-template.svg)](https://travis-ci.org/rla/simple-template)
+
 ## Example
 
 Input markup (`test.html` file):
