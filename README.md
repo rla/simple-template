@@ -17,18 +17,16 @@ Input markup (`test.html` file):
 
 rendering with data:
 
-    :- use_module(library(st/st_file)).
-    :- use_module(library(st/st_render)).
+    use_module(library(st/st_render)).
 
-    :- st_set_extension(html).
-
+    current_output(Out),
     st_render_file(test, _{
         title: 'Hello',
         items: [
             _{ title: 'Item 1', content: 'Abc 1' },
             _{ title: 'Item 1', content: 'Abc 2' }
         ]
-    }).
+    }, Out, []).
 
 output:
 
@@ -39,6 +37,27 @@ output:
 
     <h2>Item 1</h2>
     <div class="content">Abc 2</div>
+
+## API
+
+Render template from string:
+
+    st_render_string(String, Data, Stream, File, Options).
+
+Render template from file:
+
+    st_render_file(File, Data, Stream, Options).
+
+Render template from codes:
+
+    st_render_codes(Codes, Data, Stream, File, Options).
+
+Options accept the following:
+
+ * encoding - default `utf8`.
+ * extension - file name extension, default `html`.
+ * cache - whether to use cache, default `false`.
+ * strip - whether to try to strip whitespace from output, default `false`.
 
 ## Processing instructions
 
@@ -160,29 +179,27 @@ in the output.
 
 ## Caching
 
-Template caching is enabled by importing the `st_file` module and calling
-the `st_enable_cache` predicate. This makes the system cache parsed templates.
-This is particulary useful when using includes in loops. To purge the current
-cache contents, use the `st_cache_invalidate` predicate.
+Template caching is enabled by setting option `cache: true` during rendering. This makes
+the system cache parsed templates. This is particulary useful when using includes in loops.
+To purge the current cache contents, use the `st_cache_invalidate` predicate.
 
 ## Whitespace removal
 
-Some (but not all) whitespace is removed by calling the `st_enable_strip_white`
-predicate from the `st_parse` module. Line indents and some duplicate line ends
+Some (but not all) whitespace is removed by setting option
+`strip: true` during rendering. Line indents and some duplicate line ends
 are removed from the output. Whitespace removal is parse-time and does not
 incur any runtime penalty.
 
 ## Encoding
 
-Encoding for template files can be specified with the `st_set_encoding/1` predicate
-in the `st_render` module. Accepted values are all that are accepted by the `encoding`
-option of the `read_file_to_codes/3` predicate.
+Encoding for template files can be specified by setting option `encoding` during rendering. Accepted
+values are all that are accepted by the `encoding` option of the `read_file_to_codes/3` predicate.
 
 ## Installation
 
 This package requires Swi-Prolog 7.x.
 
-    pack_install('http://packs.rlaanemets.com/simple-template/simple_template-*.tgz').
+    pack_install(simple_template).
 
 ## API documentation
 
@@ -206,6 +223,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
+ * 2015-11-07 version 1.0.0. Removal of global options. Backwards-incompatible.
  * 2014-05-09 version 0.3.0. Provide st_cache_invalidate/0, \= operator, comments.
  * 2014-05-07 version 0.2.0. Literal lists, encode_* functions.
  * 2014-03-02 version 0.1.0. Provided st_set_encoding/1.

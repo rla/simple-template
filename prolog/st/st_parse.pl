@@ -1,7 +1,5 @@
 :- module(st_parse, [
-    st_parse/2, % +Codes, -Blocks
-    st_enable_strip_white/0,
-    st_disable_strip_white/0
+    st_parse/3 % +Codes, -Blocks, +Options
 ]).
 
 /** <module> Template parser
@@ -9,37 +7,21 @@
 Parses a list of tokens into a template structure.
 */
 
+:- use_module(library(option)).
+
 :- use_module(st_tokens).
 :- use_module(st_white).
 
-:- dynamic(strip_white).
-
-%! st_enable_strip_white is det.
-%
-% Enables whitespace stripping.
-
-st_enable_strip_white:-
-    (   strip_white
-    ->  true
-    ;   assertz(strip_white)).
-
-%! st_disable_strip_white is det.
-%
-% Disables whitespace stripping.
-
-st_disable_strip_white:-
-    retractall(strip_white).
-
-%! st_parse(+Codes, -Templ) is det.
+%! st_parse(+Codes, -Templ, +Options) is det.
 %
 % Parses given list of codes into
 % a template.
 %
 % Throws various parsing errors.
 
-st_parse(Codes, Blocks):-
+st_parse(Codes, Blocks, Options):-
     st_tokens(Codes, Tokens),
-    phrase(blocks(Tmp), Tokens, Rest), !,
+    phrase(blocks(Tmp, Options), Tokens, Rest), !,
     check_rest(Rest),
     Blocks = Tmp.
 
@@ -62,44 +44,44 @@ check_rest([else_if(_)|_]):-
 
 % Takes as many blocks as possible.
 
-blocks([Block|Blocks]) -->
-    block(Block), !,
-    blocks(Blocks).
+blocks([Block|Blocks], Options) -->
+    block(Block, Options), !,
+    blocks(Blocks, Options).
     
-blocks([]) --> [].
+blocks([], _) --> [].
 
 % Output statement.
 
-block(out(Term)) -->
+block(out(Term), _) -->
     [out(Term)].
     
 % Unescaped output statement.
 
-block(out_unescaped(Term)) -->
+block(out_unescaped(Term), _) -->
     [out_unescaped(Term)].
 
 % Each loop.
 
-block(each(Items, Item, Blocks)) -->
-    [each(Items, Item)], blocks(Blocks), block_end.
+block(each(Items, Item, Blocks), Options) -->
+    [each(Items, Item)], blocks(Blocks, Options), block_end.
 
-block(each(Items, Item, Index, Blocks)) -->
-    [each(Items, Item, Index)], blocks(Blocks), block_end.
+block(each(Items, Item, Index, Blocks), Options) -->
+    [each(Items, Item, Index)], blocks(Blocks, Options), block_end.
 
-block(each(Items, Item, Index, Len, Blocks)) -->
-    [each(Items, Item, Index, Len)], blocks(Blocks), block_end.
+block(each(Items, Item, Index, Len, Blocks), Options) -->
+    [each(Items, Item, Index, Len)], blocks(Blocks, Options), block_end.
 
 % if/else/else if blocks.
 
-block(if(Cond, True, Rest)) -->
-    [if(Cond)], blocks(True), cond_rest(Rest).
+block(if(Cond, True, Rest), Options) -->
+    [if(Cond)], blocks(True, Options), cond_rest(Rest, Options).
     
 % Text output.
 
-block(text(String)) -->
+block(text(String), Options) -->
     [text(Codes)], !,
     {
-        (   strip_white
+        (   option(strip(true), Options)
         ->  st_strip_indent(Codes, Stripped),
             string_codes(String, Stripped)
         ;   string_codes(String, Codes))
@@ -108,18 +90,18 @@ block(text(String)) -->
 
 % Include.
 
-block(include(File)) -->
+block(include(File), _) -->
     [include(File)].
 
-block(include(File, Var)) -->
+block(include(File, Var), _) -->
     [include(File, Var)].
 
 % Dynamic include.
 
-block(dynamic_include(FileVar)) -->
+block(dynamic_include(FileVar), _) -->
     [dynamic_include(FileVar)].
 
-block(dynamic_include(FileVar, Var)) -->
+block(dynamic_include(FileVar, Var), _) -->
     [dynamic_include(FileVar, Var)].
 
 % Recognizes block end or
@@ -133,14 +115,14 @@ block_end -->
 
 % Remainer part of if/else if block.
 
-cond_rest([]) -->
+cond_rest([], _) -->
     [end], !.
     
-cond_rest(Blocks) -->
-    [else], blocks(Blocks), block_end, !.
+cond_rest(Blocks, Options) -->
+    [else], blocks(Blocks, Options), block_end, !.
 
-cond_rest([if(Cond, True, Rest)]) -->
-    [else_if(Cond)], blocks(True), cond_rest(Rest), !.
+cond_rest([if(Cond, True, Rest)], Options) -->
+    [else_if(Cond)], blocks(True, Options), cond_rest(Rest, Options), !.
 
-cond_rest(_) -->
+cond_rest(_, _) -->
     { throw(error(expecting_cond_else_or_end)) }.

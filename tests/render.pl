@@ -4,10 +4,21 @@
 :- use_module(prolog/st/st_render).
 :- use_module(prolog/st/st_file).
 
-:- meta_predicate(test_rendering(0, +)).
+test_rendering(Call, Expected):-
+    Call = st_render_string(Input, Data, File), !,
+    with_output_to_codes((
+        current_output(Stream),
+        call(st_render_string(Input, Data, Stream, File, []))
+    ), Codes),
+    string_codes(String, Codes),
+    assertion(String = Expected).
 
-test_rendering(Goal, Expected):-
-    with_output_to_codes(Goal, Codes),
+test_rendering(Call, Expected):-
+    Call = st_render_string(Input, Data, File, Options),
+    with_output_to_codes((
+        current_output(Stream),
+        call(st_render_string(Input, Data, Stream, File, Options))
+    ), Codes),
     string_codes(String, Codes),
     assertion(String = Expected).
 
@@ -79,7 +90,6 @@ test(each_index_length):-
         _{ items: [1,2,3] }, dummy), "103213323").
 
 test(include):-
-    st_set_extension(html),
     test_rendering(st_render_string("{{ include tests/included }}", _{}, dummy), "i").
 
 test(include_variable):-
@@ -90,7 +100,6 @@ test(include_variable_scoped):-
         _{ b: _{ a: 1 } }, dummy), "1").
 
 test(dynamic_include):-
-    st_set_extension(html),
     test_rendering(st_render_string("{{ dynamic_include file }}",
         _{ file: tests/included }, dummy), "i").
 
@@ -103,27 +112,22 @@ test(dynamic_include_variable_scoped):-
         _{ b: _{ a: 1 }, file: tests/included_variable }, dummy), "1").
 
 test(white_inline):-
-    st_enable_strip_white,
     test_rendering(st_render_string("abc {{= a }} def",
         _{ a: 1 }, dummy), "abc 1 def").
 
 test(white_unindent):-
-    st_enable_strip_white,
     test_rendering(st_render_string("abc\n{{= a }}\n def",
-        _{ a: 1 }, dummy), "abc\n1\ndef").
+        _{ a: 1 }, dummy, _{ strip: true }), "abc\n1\ndef").
 
 test(white_collapse_line_end):-
-    st_enable_strip_white,
     test_rendering(st_render_string("abc\n{{= a }}\n\n def",
-        _{ a: 1 }, dummy), "abc\n1\ndef").
+        _{ a: 1 }, dummy, _{ strip: true }), "abc\n1\ndef").
 
 test(white_collapse_indent):-
-    st_enable_strip_white,
     test_rendering(st_render_string("abc\n   \n   {{= a }}\n\n def",
-        _{ a: 1 }, dummy), "abc\n1\ndef").
+        _{ a: 1 }, dummy, _{ strip: true }), "abc\n1\ndef").
 
 test(white_disabled):-
-    st_disable_strip_white,
     test_rendering(st_render_string("abc\n   \n   {{= a }}\n\n def",
         _{ a: 1 }, dummy), "abc\n   \n   1\n\n def").
 
