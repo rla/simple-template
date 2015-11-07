@@ -47,7 +47,7 @@ st_render_string(String, Data, Stream, File, Options):-
     merge_defaults(Options, ActualOptions),
     st_render_codes(Codes, Data, Stream, File, ActualOptions).
 
-%! st_render_file(+File, +Data, +Stream, +0ptions) is det.
+%! st_render_file(+File, +Data, +Stream, +Options) is det.
 %
 % Renders given file with the given data
 % into the stream.
