@@ -23,14 +23,14 @@ st_tokens(Codes, Tokens):-
     Tokens = Tmp2.
 
 % Collapses codes into text tokens.
-    
+
 collapse([Token|Tokens]) -->
     text(Token), !,
     collapse(Tokens).
-    
+
 collapse([Token|Tokens]) -->
     [Token], collapse(Tokens).
-    
+
 collapse([]) --> [].
 
 text(text(Codes)) -->
@@ -39,10 +39,10 @@ text(text(Codes)) -->
 text_codes([Code|Codes]) -->
     text_code(Code),
     text_codes(Codes).
-    
+
 text_codes([Code]) -->
     text_code(Code).
-    
+
 text_code(Code) -->
     [Code], { number(Code) }.
 
@@ -57,24 +57,24 @@ tokens([Token|Tokens]) -->
 tokens([]) --> "".
 
 comment -->
-    "{{%", string(_), "}}".
+    "{#", string(_), "#}".
 
 token(out(Term)) -->
-    "{{=", whites, term(Term), !.
-    
+    "{{", whites, term_bb(Term), !.
+
 token(out_unescaped(Term)) -->
-    "{{-", whites, term(Term), !.
+    "{% unescape", whites, term(Term), !.
 
 token(end) -->
-    "{{", whites, "end", whites, "}}", !.
+    "{%", whites, "end", whites, "%}", !.
 
 token(else) -->
-    "{{", whites, "else", whites, "}}", !.
+    "{%", whites, "else", whites, "%}", !.
 
 % FIXME validate path spec.
 
 token(Token) -->
-    "{{", whites, "include ", whites, term(Term), !,
+    "{%", whites, "include ", whites, term(Term), !,
     {
         (   Term =.. [',', File, Var]
         ->  Token = include(File, Var)
@@ -82,7 +82,7 @@ token(Token) -->
     }.
 
 token(Token) -->
-    "{{", whites, "dynamic_include ", whites, term(Term), !,
+    "{%", whites, "dynamic_include ", whites, term(Term), !,
     {
         (   Term = ','(File, Var)
         ->  Token = dynamic_include(File, Var)
@@ -90,13 +90,13 @@ token(Token) -->
     }.
 
 token(if(Cond)) -->
-    "{{", whites, "if ", whites, term(Cond), !.
+    "{%", whites, "if ", whites, term(Cond), !.
 
 token(else_if(Cond)) -->
-    "{{", whites, "else ", whites, "if ", whites, term(Cond), !.
+    "{%", whites, "else ", whites, "if ", whites, term(Cond), !.
 
 token(Token) -->
-    "{{", whites, "each ", whites, term(Term), !,
+    "{%", whites, "each ", whites, term(Term), !,
     {
         (   Term = ','(Items, ','(Item, ','(Index, Len)))
         ->  Token = each(Items, Item, Index, Len)
@@ -108,7 +108,7 @@ token(Token) -->
     }.
 
 token(_) -->
-    "{{", whites, [C1,C2,C3,C4,C5],
+    "{%", whites, [C1,C2,C3,C4,C5],
     {
         atom_codes(Atom, [C1,C2,C3,C4,C5]),
         atom_concat(Atom, '...', At),
@@ -129,7 +129,23 @@ term(Term) -->
             throw(error(invalid_input(String))))
     }.
 
-term_codes([]) --> "}}", !.
+term_codes([]) --> "%}", !.
 
 term_codes([Code|Codes]) -->
     [Code], term_codes(Codes).
+
+term_bb(Term) -->
+    term_bb_codes(Codes),
+    {
+        (   read_term_from_codes(Codes, Term, [])
+        ->  (   ground(Term)
+            ->  true
+            ;   throw(error(non_ground_expression(Term))))
+        ;   string_codes(String, Codes),
+            throw(error(invalid_input(String))))
+    }.
+
+term_bb_codes([]) --> "}}", !.
+
+term_bb_codes([Code|Codes]) -->
+    [Code], term_bb_codes(Codes).
