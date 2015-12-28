@@ -9,8 +9,17 @@ Parses a list of tokens into a template structure.
 
 :- use_module(library(option)).
 
-:- use_module(st_tokens).
 :- use_module(st_white).
+
+init_fe :-
+    source_file(init_fe, FWD),
+    file_directory_name(FWD, PWD),
+    assert(user:file_search_path(sl, PWD)).
+
+:- init_fe.
+
+% Check if alternate tokenizer is set
+is_semblance_p(semblance).
 
 %! st_parse(+Codes, -Templ, +Options) is det.
 %
@@ -20,11 +29,28 @@ Parses a list of tokens into a template structure.
 % Throws various parsing errors.
 
 st_parse(Codes, Blocks, Options):-
-    st_tokens(Codes, Tokens),
+    option(frontend(Frontend), Options),
+    is_semblance_p(Frontend),
+    use_module(sl(semblance_tokens)),
+    semblance_tokens:semblance_tokens(Codes, Tokens),
     phrase(blocks(Tmp, Options), Tokens, Rest), !,
     check_rest(Rest),
     Blocks = Tmp.
 
+%! st_parse(+Codes, -Templ, +Options) is det.
+%
+% Fallback to default st_tokens incase the Options are not set in
+% default_options
+%
+% Throws various parsing errors.
+st_parse(Codes, Blocks, Options):-
+    use_module(sl(st_tokens)),
+    st_tokens:st_tokens(Codes, Tokens),
+    phrase(blocks(Tmp, Options), Tokens, Rest), !,
+    check_rest(Rest),
+    Blocks = Tmp.
+
+% Checks the remaining tokens.
 % Checks the remaining tokens.
 % Some tokens (end, else, else_if)
 % could appear by mistake without the
@@ -35,7 +61,7 @@ check_rest([]):- !.
 
 check_rest([end|_]):-
     throw(error(unexpected_block_end)).
-    
+
 check_rest([else|_]):-
     throw(error(unexpected_else)).
 
@@ -47,14 +73,14 @@ check_rest([else_if(_)|_]):-
 blocks([Block|Blocks], Options) -->
     block(Block, Options), !,
     blocks(Blocks, Options).
-    
+
 blocks([], _) --> [].
 
 % Output statement.
 
 block(out(Term), _) -->
     [out(Term)].
-    
+
 % Unescaped output statement.
 
 block(out_unescaped(Term), _) -->
@@ -75,7 +101,7 @@ block(each(Items, Item, Index, Len, Blocks), Options) -->
 
 block(if(Cond, True, Rest), Options) -->
     [if(Cond)], blocks(True, Options), cond_rest(Rest, Options).
-    
+
 % Text output.
 
 block(text(String), Options) -->
@@ -109,7 +135,7 @@ block(dynamic_include(FileVar, Var), _) -->
 
 block_end -->
     [end], !.
-    
+
 block_end -->
     { throw(error(expecting_block_end)) }.
 
@@ -117,7 +143,7 @@ block_end -->
 
 cond_rest([], _) -->
     [end], !.
-    
+
 cond_rest(Blocks, Options) -->
     [else], blocks(Blocks, Options), block_end, !.
 

@@ -26,7 +26,8 @@ default_options(_{
     encoding: utf8,
     extension: html,
     cache: false,
-    strip: false
+    strip: false,
+    frontend: st_tokens
 }).
 
 % Merges the given options with

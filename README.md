@@ -1,4 +1,4 @@
-# simple-template (modified by Ahungry for Djula style syntax)
+# simple-template
 
 Text (HTML) template processor for Swi-Prolog. Works
 best for cases when you have mainly static HTML.
@@ -9,11 +9,11 @@ best for cases when you have mainly static HTML.
 
 Input markup (`test.html` file):
 
-    <h1>{{ title }}</h1>
-    {% each items, item %}
-        <h2>{{ item.title }}</h2>
-        <div class="content">{% unescape item.content %}</div>
-    {% end %}
+    <h1>{{= title }}</h1>
+    {{ each items, item }}
+        <h2>{{= item.title }}</h2>
+        <div class="content">{{- item.content }}</div>
+    {{ end }}
 
 rendering with data:
 
@@ -27,6 +27,44 @@ rendering with data:
             _{ title: 'Item 1', content: 'Abc 2' }
         ]
     }, Out, []).
+
+output:
+
+    <h1>Hello</h1>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 1</div>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 2</div>
+
+## Alternate Example: Semblance syntax
+
+If you find your tools work better with a template tag syntax that
+more closely resembles other web templating engines, such as Djula
+(Python) / Twig (PHP), you can also call an alternate frontend
+tokenizer as follows:
+
+Input markup (`test.html` file):
+
+    <h1>{{ title }}</h1>
+    {% each items, item %}
+        <h2>{{ item.title }}</h2>
+        <div class="content">{% unescape item.content %}</div>
+    {{ end }}
+
+rendering with data:
+
+    use_module(library(st/st_render)).
+
+    current_output(Out),
+    st_render_file(test, _{
+        title: 'Hello',
+        items: [
+            _{ title: 'Item 1', content: 'Abc 1' },
+            _{ title: 'Item 1', content: 'Abc 2' }
+        ]
+    }, Out, _{ frontend: semblance }).
 
 output:
 
@@ -58,6 +96,8 @@ Options accept the following:
  * extension - file name extension, default `html`.
  * cache - whether to use cache, default `false`.
  * strip - whether to try to strip whitespace from output, default `false`.
+ * frontend - which syntax/tokenizer to use, currently `st_tokens`
+     (default) or `semblance` (alternate)
 
 ## Processing instructions
 
@@ -68,19 +108,30 @@ There are 4 types of processing instructions.
 
 ### Output
 
-There are two output instructions. `{{ expression }}` outputs the expression
-value and escapes the special HTML characters. `{% unescape expression %}` outputs the
-expression value but does not escape the output.
+There are two output instructions. `{{= expression }}` outputs the expression
+value and escapes the special HTML characters. `{{- expression }}` outputs the
+expression value but does not escape the output. There must be no space
+between `{{` and `=` or `-`.
+
+#### Semblance Output
+
+If using the semblance syntax, please note the following changes (the
+rest of the README will list the default tag syntax):
+
+* {{= variable }} becomes {{ variable }}
+* {{- rawvar }} becomes {% unescape rawvar %}
+* {{ ... }} becomes {% ... %} (such as {{ if cond }} to {% if cond %})
+* {{% comment }} becomes {# comment #}
 
 ### Includes
 
-Includes use the syntax `{% include path/to/file %}`. The path should be relative.
+Includes use the syntax `{{ include path/to/file }}`. The path should be relative.
 The relative path is resolved against the current file location and the currently
 set file extension is added. All values from the current scope are available to
-the included file. There is also `{% include path/to/file, expression %}` that
+the included file. There is also `{{ include path/to/file, expression }}` that
 sets the scope of the included file to the value of the expression (must be a dict).
 
-Dynamic includes use the syntax `{% dynamic_include expression %}`. The value of
+Dynamic includes use the syntax `{{ dynamic_include expression }}`. The value of
 the expression must be a file path specifier. There is also a variant with the
 scope expression.
 
@@ -91,13 +142,13 @@ inside a loop otherwise the included file is parsed over and over again.
 
 Conditional instructions have the following syntax:
 
-    {% if cond_expression1 %}
+    {{ if cond_expression1 }}
     ...
-    {% else if cond_expression2 %}
+    {{ else if cond_expression2 }}
     ...
-    {% else %}
+    {{ else }}
     ...
-    {% end %}
+    {{ end }}
 
 `else if` and `else` parts are optional.
 
@@ -105,9 +156,9 @@ Conditional instructions have the following syntax:
 
 The each loop allows to process lists. The syntax for each loop:
 
-    {% each expression, item_var, index_var, len_var %}
+    {{ each expression, item_var, index_var, len_var }}
     ...
-    {% end %}
+    {{ end }}
 
 The value of expression must be a list. `item_var`, `index_var` and `len_var`
 refer to current item, current item index and the length of the list.
@@ -173,7 +224,7 @@ have arity Arity + 1.
 
 ## Comments
 
-Comment blocks start with `{#` and end with `#}`. Comments do not appear
+Comment blocks start with `{{%` and end with `}}`. Comments do not appear
 in the output.
 
 ## Caching
@@ -220,12 +271,9 @@ Or if you cloned the repo:
 Please send bug reports/feature request through the GitHub
 project [page](https://github.com/rla/simple-template).
 
-Or if this is not merged to main, the refactor at:
-[page](https://github.com/ahungry/simple-template).
-
 ## Changelog
 
- * 2015-12-27 version 2.0.0. Syntax reformat to Djula style. Backwards-incompatible.
+ * 2015-12-28 version 1.1.0. Add alternate tokenizer `semblance`
  * 2015-11-07 version 1.0.0. Removal of global options. Backwards-incompatible.
  * 2014-05-09 version 0.3.0. Provide st_cache_invalidate/0, \= operator, comments.
  * 2014-05-07 version 0.2.0. Literal lists, encode_* functions.
