@@ -41,9 +41,9 @@ output:
 ## Alternate Example: Semblance syntax
 
 If you find your tools work better with a template tag syntax that
-more closely resembles other web templating engines, such as Djula
-(Python) / Twig (PHP), you can also call an alternate frontend
-tokenizer as follows:
+more closely resembles other web templating engines, such as Django
+(Python), Djula (Common Lisp) / Twig (PHP), you can also call an
+alternate frontend syntax tokenizer as follows:
 
 Input markup (`test.html` file):
 
