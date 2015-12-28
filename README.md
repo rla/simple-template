@@ -42,7 +42,7 @@ output:
 
 If you find your tools work better with a template tag syntax that
 more closely resembles other web templating engines, such as Django
-(Python), Djula (Common Lisp) / Twig (PHP), you can also call an
+(Python) / Djula (Common Lisp) / Twig (PHP), you can also call an
 alternate frontend syntax tokenizer as follows:
 
 Input markup (`test.html` file):
@@ -51,7 +51,7 @@ Input markup (`test.html` file):
     {% each items, item %}
         <h2>{{ item.title }}</h2>
         <div class="content">{% unescape item.content %}</div>
-    {{ end }}
+    {% end %}
 
 rendering with data:
 
