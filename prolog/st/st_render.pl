@@ -27,7 +27,7 @@ default_options(_{
     extension: html,
     cache: false,
     strip: false,
-    frontend: st_tokens
+    frontend: simple
 }).
 
 % Merges the given options with

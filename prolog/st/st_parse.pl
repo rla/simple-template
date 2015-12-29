@@ -10,6 +10,8 @@ Parses a list of tokens into a template structure.
 :- use_module(library(option)).
 
 :- use_module(st_white).
+:- use_module(st_simple_tokens).
+:- use_module(semblance_tokens).
 
 init_fe :-
     source_file(init_fe, FWD),
@@ -21,31 +23,38 @@ init_fe :-
 % Check if alternate tokenizer is set
 is_semblance_p(semblance).
 
-%! st_parse(+Codes, -Templ, +Options) is det.
+%! st_tokens(+Codes, -Tokens, +Options) is det.
 %
-% Parses given list of codes into
-% a template.
-%
-% Throws various parsing errors.
+% Throw an error if no valid tokenizer is chosen in options
+st_tokens(_Codes, _Tokens, Options):-
+    option(frontend(Frontend), Options),
+    \+member(Frontend, [simple, semblance]),
+    throw(error(invalid_frontend_tokenizer(Frontend))).
 
-st_parse(Codes, Blocks, Options):-
+%! st_tokens(+Codes, -Tokens, +Options) is det.
+%
+% Assists in choosing optional tokenizer, tokenizes.
+st_tokens(Codes, Tokens, Options):-
     option(frontend(Frontend), Options),
     is_semblance_p(Frontend),
-    use_module(sl(semblance_tokens)),
-    semblance_tokens:semblance_tokens(Codes, Tokens),
-    phrase(blocks(Tmp, Options), Tokens, Rest), !,
-    check_rest(Rest),
-    Blocks = Tmp.
+    semblance_tokens(Codes, Tokens).
+
+%! st_tokens(+Codes, -Tokens, +Options) is det.
+%
+% Fallback to default st_tokens incase the Options are not set in
+% default_options, or if the `simple` option (default) is set.
+%
+% Tokenizes the input.
+st_tokens(Codes, Tokens, _Options):-
+    st_simple_tokens(Codes, Tokens).
 
 %! st_parse(+Codes, -Templ, +Options) is det.
 %
-% Fallback to default st_tokens incase the Options are not set in
-% default_options
+% Parses given list of codes into a template.
 %
 % Throws various parsing errors.
 st_parse(Codes, Blocks, Options):-
-    use_module(sl(st_tokens)),
-    st_tokens:st_tokens(Codes, Tokens),
+    st_tokens(Codes, Tokens, Options),
     phrase(blocks(Tmp, Options), Tokens, Rest), !,
     check_rest(Rest),
     Blocks = Tmp.

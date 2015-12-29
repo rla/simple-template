@@ -258,4 +258,9 @@ test(comment):-
 test(semblance_comment):-
     semblance_test_rendering(st_render_string("{{ a }}{# this is a comment #}", _{ a: 123 }, dummy), "123").
 
+test(invalid_frontend_tokenizer):-
+    catch((st_render_string("abc\n   \n   {{= a }}\n\n def",
+                            _{ a: 1 }, dummy, dummy, _{ strip: true, frontend: dummy }), fail),
+          error(invalid_frontend_tokenizer(_)), true).
+
 :- end_tests(st_render).
