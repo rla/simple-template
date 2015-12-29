@@ -43,7 +43,7 @@ token(out(Term)) -->
     "{{", whites, term_bb(Term), !.
 
 token(out_unescaped(Term)) -->
-    "{% unescape", whites, term(Term), !.
+    "{%", whites, "unescape", whites, term(Term), !.
 
 token(end) -->
     "{%", whites, "end", whites, "%}", !.
