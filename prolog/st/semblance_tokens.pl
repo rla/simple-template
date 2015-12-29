@@ -7,10 +7,11 @@
 Recognizes tokens from symbol codes.
 
 This is an alternate tokenizer which uses the semblance type
-tag format (which aims to be more like djula/twig tag types).
+tag format (which aims to be more like django/djula/twig tag types).
 */
 
 :- use_module(library(dcg/basics)).
+:- use_module(st_common_tokens).
 
 %! semblance_tokens(+Codes, -Tokens) is det.
 %
@@ -24,30 +25,6 @@ semblance_tokens(Codes, Tokens):-
     phrase(tokens(Tmp1), Codes),
     phrase(collapse(Tmp2), Tmp1), !,
     Tokens = Tmp2.
-
-% Collapses codes into text tokens.
-
-collapse([Token|Tokens]) -->
-    text(Token), !,
-    collapse(Tokens).
-
-collapse([Token|Tokens]) -->
-    [Token], collapse(Tokens).
-
-collapse([]) --> [].
-
-text(text(Codes)) -->
-    text_codes(Codes).
-
-text_codes([Code|Codes]) -->
-    text_code(Code),
-    text_codes(Codes).
-
-text_codes([Code]) -->
-    text_code(Code).
-
-text_code(Code) -->
-    [Code], { number(Code) }.
 
 tokens(Tokens) -->
     comment, !,
