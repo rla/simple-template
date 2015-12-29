@@ -38,12 +38,12 @@ output:
     <h2>Item 1</h2>
     <div class="content">Abc 2</div>
 
-## Alternate Example: Semblance syntax
+## Alternate syntax: semblance
 
 If you find your tools work better with a template tag syntax that
 more closely resembles other web templating engines, such as Django
-(Python) / Djula (Common Lisp) / Twig (PHP), you can also call an
-alternate frontend syntax tokenizer as follows:
+(Python) / Djula (Common Lisp) / Twig (PHP), you can also use an
+alternate frontend syntax called `semblance`:
 
 Input markup (`test.html` file):
 
@@ -96,13 +96,14 @@ Options accept the following:
  * extension - file name extension, default `html`.
  * cache - whether to use cache, default `false`.
  * strip - whether to try to strip whitespace from output, default `false`.
- * frontend - which syntax/tokenizer to use, currently `st_tokens`
-     (default) or `semblance` (alternate)
+ * frontend - which syntax to use, currently `simple`
+     (default) or `semblance`.
 
 ## Processing instructions
 
 Processing instructions start with double opening curly braces (`{{`) and
-end with double closing curly braces (`}}`).
+end with double closing curly braces (`}}`). Semblance syntax variations
+are described below.
 
 There are 4 types of processing instructions.
 
@@ -112,16 +113,6 @@ There are two output instructions. `{{= expression }}` outputs the expression
 value and escapes the special HTML characters. `{{- expression }}` outputs the
 expression value but does not escape the output. There must be no space
 between `{{` and `=` or `-`.
-
-#### Semblance Output
-
-If using the semblance syntax, please note the following changes (the
-rest of the README will list the default tag syntax):
-
-* {{= variable }} becomes {{ variable }}
-* {{- rawvar }} becomes {% unescape rawvar %}
-* {{ ... }} becomes {% ... %} (such as {{ if cond }} to {% if cond %})
-* {{% comment }} becomes {# comment #}
 
 ### Includes
 
@@ -163,6 +154,32 @@ The each loop allows to process lists. The syntax for each loop:
 The value of expression must be a list. `item_var`, `index_var` and `len_var`
 refer to current item, current item index and the length of the list.
 `index_var` and `len_var` are optional.
+
+## Semblance syntax
+
+The semblance syntax has the following differences.
+
+Output instruction: `{{ variable }}`.
+
+Unescaped output: `{% unescape rawvar %}`.
+
+Conditional instructions:
+
+    {% if cond_expression1 %}
+    ...
+    {% else if cond_expression2 %}
+    ...
+    {% else %}
+    ...
+    {% end %}
+
+Each loop:
+
+    {% each expression, item_var, index_var, len_var %}
+    ...
+    {% end %}
+
+Comments: `{# comment #}`.
 
 ## Expressions
 
@@ -249,7 +266,7 @@ values are all that are accepted by the `encoding` option of the `read_file_to_c
 
 This package requires SWI-Prolog 7.x.
 
-    pack_install(simple_template).
+    pack_install('http://packs.rlaanemets.com/simple-template/simple_template-1.1.0.tgz').
 
 ## API documentation
 
@@ -273,7 +290,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
- * 2015-12-28 version 1.1.0. Add alternate tokenizer `semblance`
+ * 2015-12-28 version 1.1.0. Add alternate syntax: semblance.
  * 2015-11-07 version 1.0.0. Removal of global options. Backwards-incompatible.
  * 2014-05-09 version 0.3.0. Provide st_cache_invalidate/0, \= operator, comments.
  * 2014-05-07 version 0.2.0. Literal lists, encode_* functions.
