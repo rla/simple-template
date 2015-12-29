@@ -1,8 +1,8 @@
 :- module(st_common_tokens, [
-              collapse/3,
-              text/3,
-              text_codes/3,
-              text_code/3
+    collapse/3,
+    text/3,
+    text_codes/3,
+    text_code/3
 ]).
 
 /** <module> Template tokenizer

@@ -1,5 +1,5 @@
-:- module(semblance_tokens, [
-    semblance_tokens/2
+:- module(st_semblance_tokens, [
+    st_semblance_tokens/2
 ]).
 
 /** <module> Template tokenizer
@@ -21,7 +21,7 @@ tag format (which aims to be more like django/djula/twig tag types).
 % the input in out/block instruction cannot
 % be parsed into a Prolog term.
 
-semblance_tokens(Codes, Tokens):-
+st_semblance_tokens(Codes, Tokens):-
     phrase(tokens(Tmp1), Codes),
     phrase(collapse(Tmp2), Tmp1), !,
     Tokens = Tmp2.

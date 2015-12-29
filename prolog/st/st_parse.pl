@@ -7,59 +7,40 @@
 Parses a list of tokens into a template structure.
 */
 
+:- use_module(library(error)).
 :- use_module(library(option)).
 
 :- use_module(st_white).
 :- use_module(st_simple_tokens).
-:- use_module(semblance_tokens).
-
-init_fe :-
-    source_file(init_fe, FWD),
-    file_directory_name(FWD, PWD),
-    assert(user:file_search_path(sl, PWD)).
-
-:- init_fe.
-
-% Check if alternate tokenizer is set
-is_semblance_p(semblance).
+:- use_module(st_semblance_tokens).
 
 %! st_tokens(+Codes, -Tokens, +Options) is det.
 %
-% Throw an error if no valid tokenizer is chosen in options
-st_tokens(_Codes, _Tokens, Options):-
-    option(frontend(Frontend), Options),
-    \+member(Frontend, [simple, semblance]),
-    throw(error(invalid_frontend_tokenizer(Frontend))).
+% Throw an error if no valid tokenizer is
+% chosen in options.
 
-%! st_tokens(+Codes, -Tokens, +Options) is det.
-%
-% Assists in choosing optional tokenizer, tokenizes.
 st_tokens(Codes, Tokens, Options):-
-    option(frontend(Frontend), Options),
-    is_semblance_p(Frontend),
-    semblance_tokens(Codes, Tokens).
-
-%! st_tokens(+Codes, -Tokens, +Options) is det.
-%
-% Fallback to default st_tokens incase the Options are not set in
-% default_options, or if the `simple` option (default) is set.
-%
-% Tokenizes the input.
-st_tokens(Codes, Tokens, _Options):-
-    st_simple_tokens(Codes, Tokens).
+    (   option(frontend(Frontend), Options)
+    ->  must_be(atom, Frontend),
+        (   Frontend = simple
+        ->  st_simple_tokens(Codes, Tokens)
+        ;   (   Frontend = semblance
+            ->  st_semblance_tokens(Codes, Tokens)
+            ;   throw(error(invalid_frontend_tokenizer(Frontend)))))
+    ;   throw(error(frontend_not_specified))).
 
 %! st_parse(+Codes, -Templ, +Options) is det.
 %
 % Parses given list of codes into a template.
 %
 % Throws various parsing errors.
+
 st_parse(Codes, Blocks, Options):-
     st_tokens(Codes, Tokens, Options),
     phrase(blocks(Tmp, Options), Tokens, Rest), !,
     check_rest(Rest),
     Blocks = Tmp.
 
-% Checks the remaining tokens.
 % Checks the remaining tokens.
 % Some tokens (end, else, else_if)
 % could appear by mistake without the
