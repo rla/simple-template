@@ -26,7 +26,8 @@ default_options(_{
     encoding: utf8,
     extension: html,
     cache: false,
-    strip: false
+    strip: false,
+    frontend: simple
 }).
 
 % Merges the given options with
@@ -51,7 +52,7 @@ st_render_string(String, Data, Stream, File, Options):-
 %
 % Renders given file with the given data
 % into the stream.
-    
+
 st_render_file(File, Data, Stream, Options):-
     must_be(ground, File),
     merge_defaults(Options, ActualOptions),
@@ -61,7 +62,7 @@ st_render_file(File, Data, Stream, Options):-
 %
 % Renders codes with the given data into the stream.
 % File argument is used for resolving includes.
-    
+
 st_render_codes(Codes, Data, Stream, File, Options):-
     must_be(list, Codes),
     must_be(ground, File),
@@ -94,7 +95,7 @@ read_file(File, Template, Options):-
     st_parse(Codes, Template, Options).
 
 % Renders escaped output.
-% Example: {{= title }}.
+% Example: {{ title }}.
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = out(Expr), !,
@@ -183,7 +184,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 % Renders include with specific scope variable.
 % Example: {{ include path/to/file, variable }}.
-    
+
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = include(Path, Var), !,
     st_resolve_include(Path, File, AbsFile),

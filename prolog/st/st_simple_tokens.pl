@@ -1,5 +1,5 @@
-:- module(st_tokens, [
-    st_tokens/2
+:- module(st_simple_tokens, [
+    st_simple_tokens/2
 ]).
 
 /** <module> Template tokenizer
@@ -8,6 +8,7 @@ Recognizes tokens from symbol codes.
 */
 
 :- use_module(library(dcg/basics)).
+:- use_module(st_common_tokens).
 
 %! st_tokens(+Codes, -Tokens) is det.
 %
@@ -17,34 +18,10 @@ Recognizes tokens from symbol codes.
 % the input in out/block instruction cannot
 % be parsed into a Prolog term.
 
-st_tokens(Codes, Tokens):-
+st_simple_tokens(Codes, Tokens):-
     phrase(tokens(Tmp1), Codes),
     phrase(collapse(Tmp2), Tmp1), !,
     Tokens = Tmp2.
-
-% Collapses codes into text tokens.
-    
-collapse([Token|Tokens]) -->
-    text(Token), !,
-    collapse(Tokens).
-    
-collapse([Token|Tokens]) -->
-    [Token], collapse(Tokens).
-    
-collapse([]) --> [].
-
-text(text(Codes)) -->
-    text_codes(Codes).
-
-text_codes([Code|Codes]) -->
-    text_code(Code),
-    text_codes(Codes).
-    
-text_codes([Code]) -->
-    text_code(Code).
-    
-text_code(Code) -->
-    [Code], { number(Code) }.
 
 tokens(Tokens) -->
     comment, !,
@@ -61,7 +38,7 @@ comment -->
 
 token(out(Term)) -->
     "{{=", whites, term(Term), !.
-    
+
 token(out_unescaped(Term)) -->
     "{{-", whites, term(Term), !.
 
