@@ -1,6 +1,6 @@
 # simple-template
 
-Text (HTML) template processor for Swi-Prolog. Works
+Text (HTML) template processor for SWI-Prolog. Works
 best for cases when you have mainly static HTML.
 
 [![Build Status](https://travis-ci.org/rla/simple-template.svg)](https://travis-ci.org/rla/simple-template)
@@ -247,7 +247,7 @@ values are all that are accepted by the `encoding` option of the `read_file_to_c
 
 ## Installation
 
-This package requires Swi-Prolog 7.x.
+This package requires SWI-Prolog 7.x.
 
     pack_install(simple_template).
 
