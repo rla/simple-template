@@ -43,7 +43,7 @@ output:
 If you find your tools work better with a template tag syntax that
 more closely resembles other web templating engines, such as Django
 (Python) / Djula (Common Lisp) / Twig (PHP), you can also use an
-alternate frontend syntax called `semblance`:
+alternate frontend syntax called semblance:
 
 Input markup (`test.html` file):
 
@@ -75,6 +75,8 @@ output:
 
     <h2>Item 1</h2>
     <div class="content">Abc 2</div>
+
+It is not possible to mix two syntaxes through a single render call.
 
 ## API
 
