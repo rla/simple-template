@@ -222,6 +222,23 @@ as scope entries.
 Literal lists work as expected with the elements having the interpretation as
 the expressions above.
 
+## Undefined variables
+The default behaviour when a variable that is not in the scope (template data dict) is encountered is to throw a `no_entry` error. This behaviour can be modified to set the variable value to `false` (default is `error`) by setting the `undefined` option to `false` when rendering templates. For example:
+
+    st_render_file(test, _{
+        title: 'Hello',
+        items: [
+            _{ title: 'Item 1', content: 'Abc 1' },
+            _{ title: 'Item 1', content: 'Abc 2' }
+        ]
+    }, Out, _{ undefined: false }).
+
+This is useful in situations where a developer may want to include a block in the template based on the existence of a variable. For example:
+
+    {% if page_header %}
+    <h2>{{page_header}}</h2>
+    {% end %}
+
 ## Built-in functions
 
 There are three single-argument functions to encode URI parts: `encode_path`,
