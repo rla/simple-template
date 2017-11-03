@@ -98,8 +98,9 @@ Options accept the following:
  * extension - file name extension, default `html`.
  * cache - whether to use cache, default `false`.
  * strip - whether to try to strip whitespace from output, default `false`.
- * frontend - which syntax to use, currently `simple`
-     (default) or `semblance`.
+ * frontend - which syntax to use, currently `simple` (default) or `semblance`.
+ * undefined - throw error on undefined
+   variables - `error` (default) or `false` (evaluates to false).
 
 ## Processing instructions
 
@@ -223,6 +224,7 @@ Literal lists work as expected with the elements having the interpretation as
 the expressions above.
 
 ## Undefined variables
+
 The default behaviour when a variable that is not in the scope (template data dict) is encountered is to throw a `no_entry` error. This behaviour can be modified to set the variable value to `false` (default is `error`) by setting the `undefined` option to `false` when rendering templates. For example:
 
     st_render_file(test, _{
