@@ -27,7 +27,8 @@ default_options(_{
     extension: html,
     cache: false,
     strip: false,
-    frontend: simple
+    frontend: simple,
+    undefined: error
 }).
 
 % Merges the given options with
@@ -99,7 +100,7 @@ read_file(File, Template, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = out(Expr), !,
-    st_eval(Expr, Scope, Value),
+    st_eval(Expr, Scope, Options, Value),
     st_write_escape(Stream, Value),
     render_scope(Blocks, Scope, Stream, File, Options).
 
@@ -108,7 +109,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = out_unescaped(Expr), !,
-    st_eval(Expr, Scope, Value),
+    st_eval(Expr, Scope, Options, Value),
     write(Stream, Value),
     render_scope(Blocks, Scope, Stream, File, Options).
 
@@ -117,7 +118,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = each(Expr, Var, Nested), !,
-    st_eval(Expr, Scope, Values),
+    st_eval(Expr, Scope, Options, Values),
     (   is_list(Values)
     ->  ((  member(Value, Values),
             put_dict(Var, Scope, Value, NestScope),
@@ -131,7 +132,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = each(Expr, Var, IVar, Nested), !,
-    st_eval(Expr, Scope, Values),
+    st_eval(Expr, Scope, Options, Values),
     (   is_list(Values)
     ->  Counter = counter(0),
         ((  member(Value, Values),
@@ -151,7 +152,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = each(Expr, Var, IVar, LVar, Nested), !,
-    st_eval(Expr, Scope, Values),
+    st_eval(Expr, Scope, Options, Values),
     (   is_list(Values)
     ->  length(Values, Length),
         put_dict(LVar, Scope, Length, Tmp1),
@@ -188,7 +189,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = include(Path, Var), !,
     st_resolve_include(Path, File, AbsFile),
-    st_eval(Var, Scope, Value),
+    st_eval(Var, Scope, Options, Value),
     render_file(AbsFile, Value, Stream, Options),
     render_scope(Blocks, Scope, Stream, File, Options).
 
@@ -197,7 +198,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = dynamic_include(FileVar), !,
-    st_eval(FileVar, Scope, Path),
+    st_eval(FileVar, Scope, Options, Path),
     st_resolve_include(Path, File, AbsFile),
     render_file(AbsFile, Scope, Stream, Options),
     render_scope(Blocks, Scope, Stream, File, Options).
@@ -207,9 +208,9 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = dynamic_include(FileVar, Var), !,
-    st_eval(FileVar, Scope, Path),
+    st_eval(FileVar, Scope, Options, Path),
     st_resolve_include(Path, File, AbsFile),
-    st_eval(Var, Scope, Value),
+    st_eval(Var, Scope, Options, Value),
     render_file(AbsFile, Value, Stream, Options),
     render_scope(Blocks, Scope, Stream, File, Options).
 
@@ -218,7 +219,7 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
 
 render_scope([Block|Blocks], Scope, Stream, File, Options):-
     Block = if(Cond, True, False), !,
-    st_eval(Cond, Scope, CondValue),
+    st_eval(Cond, Scope, Options, CondValue),
     (   (CondValue = 0 ; CondValue = false)
     ->  render_scope(False, Scope, Stream, File, Options)
     ;   render_scope(True, Scope, Stream, File, Options)),
