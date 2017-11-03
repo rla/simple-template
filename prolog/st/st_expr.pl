@@ -65,7 +65,7 @@ st_eval(Name, Scope, Value):-
     ->  true
     ;   (   global(Name, Value)
         ->  true
-        ;   throw(error(no_entry(Name))))).
+        ;   Value = false)).
 
 % Boolean negation.
 
