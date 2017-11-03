@@ -20,7 +20,7 @@ test(variable):-
     st_eval(a, _{ a: 123 }, _{}, 123).
 
 test(undefined_variable_error):-
-    Term =.. [st_eval, a, _{}, _{undefined: 'error'}, _],
+    Term =.. [st_eval, a, _{}, _{}, _],
     catch(Term, E, true),
     term_string(E, Error),
     Error == "error(no_entry(a))".
