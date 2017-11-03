@@ -236,7 +236,7 @@ The default behaviour when a variable that is not in the scope (template data di
 This is useful in situations where a developer may want to include a block in the template based on the existence of a variable. For example:
 
     {% if page_header %}
-    <h2>{{page_header}}</h2>
+        <h2>{{page_header}}</h2>
     {% end %}
 
 ## Built-in functions
@@ -285,7 +285,7 @@ values are all that are accepted by the `encoding` option of the `read_file_to_c
 
 This package requires SWI-Prolog 7.x.
 
-    pack_install('http://packs.rlaanemets.com/simple-template/simple_template-1.1.0.tgz').
+    pack_install(simple_template).
 
 ## API documentation
 
@@ -309,6 +309,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
+ * 2017-11-03 version 1.2.0. Option to deal with undefined variables.
  * 2015-12-28 version 1.1.0. Add alternate syntax: semblance.
  * 2015-11-07 version 1.0.0. Removal of global options. Backwards-incompatible.
  * 2014-05-09 version 0.3.0. Provide st_cache_invalidate/0, \= operator, comments.
