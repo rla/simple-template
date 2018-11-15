@@ -158,6 +158,71 @@ The value of expression must be a list. `item_var`, `index_var` and `len_var`
 refer to current item, current item index and the length of the list.
 `index_var` and `len_var` are optional.
 
+### Blocks
+
+Blocks allow to compose templates while passing around contained template as
+a value. This allows to wrap templated content with another template.
+
+Example 1: wrapping content into a panel element.
+
+Input file:
+
+    {{ block panel }}
+        <span>This will be wrapped in panel.</span>
+    {{ end }}
+
+Panel file:
+
+    <div class="panel">{{ slot }}</div>
+
+Rendering result:
+
+    <div class="panel"><span>This will be wrapped in panel.</span></div>
+
+Variable scoping inside block content is lexical. Variable scope inside
+block is either the current scope or selectable with an expression similar
+to the `{{ include file, expr }}` instruction.
+
+Example 2: layouts.
+
+Layout file (`layout.html`):
+
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>{{= title }}</title>
+        </head>
+        <body>
+            <h1>{{= title }}</h1>
+            {{ slot }}
+        </body>
+    </html>
+
+Concrete page file:
+
+    {{ block layout }}
+        <span>This is the page file.</span>
+    {{ end }}
+
+Data:
+
+    _{ title: "A page title" }
+
+Rendering result:
+
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>{{= title }}</title>
+        </head>
+        <body>
+            <h1>{{= title }}</h1>
+            <span>This is the page file.</span>
+        </body>
+    </html>
+
 ## Semblance syntax
 
 The semblance syntax has the following differences.

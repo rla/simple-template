@@ -4,6 +4,8 @@
 :- use_module(prolog/st/st_render).
 :- use_module(prolog/st/st_file).
 
+% FIXME these look weird.
+
 test_rendering(Call, Expected):-
     Call = st_render_string(Input, Data, File), !,
     with_output_to_codes((
@@ -260,7 +262,47 @@ test(semblance_comment):-
 
 test(invalid_frontend_tokenizer):-
     catch((st_render_string("abc\n   \n   {{= a }}\n\n def",
-                            _{ a: 1 }, dummy, dummy, _{ strip: true, frontend: dummy }), fail),
-          error(invalid_frontend_tokenizer(_)), true).
+        _{ a: 1 }, dummy, dummy, _{ strip: true, frontend: dummy }), fail),
+        error(invalid_frontend_tokenizer(_)), true).
+
+test(no_slot_content):-
+    Options = _{ frontend: simple },
+    catch((st_render_string("{{ slot }}",
+        _{}, dummy, dummy, Options), fail),
+        error(no_content_for_slot(_)), true).
+
+test(slot_content_mock):-
+    Slot = slot([text("a")], _{}),
+    Options = _{ frontend: simple, '_slot': Slot },
+    with_output_to_codes((
+        current_output(Stream),
+        st_render_string("{{ slot }}", _{}, Stream, dummy, Options)
+    ), Codes),
+    string_codes(String, Codes),
+    assertion(String = "a").
+
+test(block):-
+    Options = _{ strip: true, frontend: simple },
+    File = 'tests/current.html',
+    Data = _{ message: "Hello" },
+    with_output_to_codes((
+        current_output(Stream),
+        st_render_string("{{ block div_slot }}{{= message }}{{ end }}",
+            Data, Stream, File, Options)
+    ), Codes),
+    string_codes(String, Codes),
+    assertion(String = "<div>Hello</div>").
+
+test(block_scoped):-
+    Options = _{ strip: true, frontend: simple },
+    File = 'tests/current.html',
+    Data = _{ message: "Hello", block_scope: _{ who: "World" }},
+    with_output_to_codes((
+        current_output(Stream),
+        st_render_string("{{ block div_slot_scoped, block_scope }}{{= message }}{{ end }}",
+            Data, Stream, File, Options)
+    ), Codes),
+    string_codes(String, Codes),
+    assertion(String = "<div>Hello World</div>").
 
 :- end_tests(st_render).

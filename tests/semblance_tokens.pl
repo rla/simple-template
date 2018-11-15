@@ -26,6 +26,15 @@ test(include_var):-
 test(dynamic_include):-
     st_semblance_tokens(`{% dynamic_include var %}`, [dynamic_include(var)]).
 
+test(block):-
+    st_semblance_tokens(`{% block file/name %}`, [block(file/name)]).
+
+test(block_var):-
+    st_semblance_tokens(`{% block file/name, var %}`, [block(file/name, var)]).
+
+test(slot):-
+    st_semblance_tokens(`{% slot %}`, [slot]).
+
 test(if):-
     st_semblance_tokens(`{% if x=1 %}`, [if(x=1)]).
 

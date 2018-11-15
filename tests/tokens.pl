@@ -26,6 +26,15 @@ test(include_var):-
 test(dynamic_include):-
     st_simple_tokens(`{{ dynamic_include var }}`, [dynamic_include(var)]).
 
+test(block):-
+    st_simple_tokens(`{{ block file/name }}`, [block(file/name)]).
+
+test(block_var):-
+    st_simple_tokens(`{{ block file/name, var }}`, [block(file/name, var)]).
+
+test(slot):-
+    st_simple_tokens(`{{ slot }}`, [slot]).
+
 test(if):-
     st_simple_tokens(`{{ if x=1 }}`, [if(x=1)]).
 

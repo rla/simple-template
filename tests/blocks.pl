@@ -38,6 +38,21 @@ test(dynamic_include):-
 test(semblance_dynamic_include):-
     st_parse(`{% dynamic_include var %}`, [dynamic_include(var)], _{ frontend: semblance }).
 
+test(block):-
+    st_parse(`{{ block file/name }} a {{ end }}`, [block(file/name, [text(" a ")])], _{ frontend: simple }).
+
+test(semblance_block):-
+    st_parse(`{% block file/name %} a {% end %}`, [block(file/name, [text(" a ")])], _{ frontend: semblance }).
+
+test(block_scoped):-
+    st_parse(`{{ block file/name, var }} a {{ end }}`, [block(file/name, var, [text(" a ")])], _{ frontend: simple }).
+
+test(semblance_block_scoped):-
+    st_parse(`{% block file/name, var %} a {% end %}`, [block(file/name, var, [text(" a ")])], _{ frontend: semblance }).
+
+test(semblance_dynamic_include):-
+    st_parse(`{% dynamic_include var %}`, [dynamic_include(var)], _{ frontend: semblance }).
+
 test(if):-
     st_parse(`{{ if 1 }} a {{ end }}`, [if(1, [text(" a ")], [])], _{ frontend: simple }).
 

@@ -214,6 +214,39 @@ render_scope([Block|Blocks], Scope, Stream, File, Options):-
     render_file(AbsFile, Value, Stream, Options),
     render_scope(Blocks, Scope, Stream, File, Options).
 
+% Renders slot. The content for the slot must be given
+% in the upper scope.
+
+render_scope([Block|Blocks], Scope, Stream, File, Options):-
+    Block = slot, !,
+    (   del_dict('_slot', Options, slot(Content, SlotScope), PassOptions)
+    ->  render_scope(Content, SlotScope, Stream, File, PassOptions),
+        render_scope(Blocks, Scope, Stream, File, PassOptions)
+    ;   throw(error(no_content_for_slot(File)))).
+
+% Renders block. The block content is passed to the block
+% with the current scope preserved.
+
+render_scope([Block|Blocks], Scope, Stream, File, Options):-
+    Block = block(Path, Children), !,
+    st_resolve_include(Path, File, AbsFile),
+    Slot = slot(Children, Scope),
+    put_dict('_slot', Options, Slot, BlockOptions),
+    render_file(AbsFile, Scope, Stream, BlockOptions),
+    render_scope(Blocks, Scope, Stream, File, Options).
+
+% Renders block. The block content is passed to the block
+% and the scope for the block is selected by an expression.
+
+render_scope([Block|Blocks], Scope, Stream, File, Options):-
+    Block = block(Path, Var, Children), !,
+    st_resolve_include(Path, File, AbsFile),
+    st_eval(Var, Scope, Options, Value),
+    Slot = slot(Children, Scope),
+    put_dict('_slot', Options, Slot, BlockOptions),
+    render_file(AbsFile, Value, Stream, BlockOptions),
+    render_scope(Blocks, Scope, Stream, File, Options).
+
 % Renders conditional block.
 % Example: {{ if Cond }} a {{ else }} b {{ end }}
 

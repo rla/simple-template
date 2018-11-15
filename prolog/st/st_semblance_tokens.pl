@@ -59,6 +59,13 @@ token(Token) -->
     "{%", whites, "dynamic_include ", whites, st_term(Term, "%}"), !,
     { st_token_term_dyn_include(Term, Token) }.
 
+token(Token) -->
+    "{%", whites, "block", whites, st_term(Term, "%}"), !,
+    { st_token_term_block(Term, Token) }.
+
+token(slot) -->
+    "{%", whites, "slot", whites, "%}".
+
 token(if(Cond)) -->
     "{%", whites, "if ", whites, st_term(Cond, "%}"), !.
 

@@ -4,7 +4,8 @@
     st_invalid//1,
     st_token_term_include/2,
     st_token_term_dyn_include/2,
-    st_token_term_each/2
+    st_token_term_each/2,
+    st_token_term_block/2
 ]).
 
 /** <module> Template tokenizer
@@ -64,6 +65,13 @@ st_token_term_each(Term, Token):-
             ;   (   Term = ','(Items, Item)
                 ->  Token = each(Items, Item)
                 ;   throw(error(invalid_each(Term)))))).
+
+% Turns term into a block token.
+
+st_token_term_block(Term, Token):-
+    (   Term =.. [',', File, Var]
+    ->  Token = block(File, Var)
+    ;   Token = block(Term)).
 
 % Helper to report invalid instructions.
 % Begin is either {{ or {%.

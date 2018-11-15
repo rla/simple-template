@@ -120,6 +120,19 @@ block(dynamic_include(FileVar), _) -->
 block(dynamic_include(FileVar, Var), _) -->
     [dynamic_include(FileVar, Var)].
 
+% Block usage.
+
+block(block(File, Blocks), Options) -->
+    [block(File)], blocks(Blocks, Options), block_end.
+
+block(block(File, Var, Blocks), Options) -->
+    [block(File, Var)], blocks(Blocks, Options), block_end.
+
+% Block content.
+
+block(slot, _) -->
+    [slot].
+
 % Recognizes block end or
 % throws an error when one not found.
 
