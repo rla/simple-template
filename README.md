@@ -160,16 +160,28 @@ refer to current item, current item index and the length of the list.
 
 ### Blocks
 
-Blocks allow to compose templates while passing around contained template as
+Blocks allow to compose templates while passing around the contained template as
 a value. This allows to wrap templated content with another template.
+
+General syntax (block usage):
+
+    {{ block path/to/file }}
+        Block content.
+    {{ end }}
+
+And to render the distributed block content:
+
+    {{ slot }}
 
 Example 1: wrapping content into a panel element.
 
 Input file:
 
+    <div class="other_content1"></div>
     {{ block panel }}
         <span>This will be wrapped in panel.</span>
     {{ end }}
+    <div class="other_content2"></div>
 
 Panel file:
 
@@ -177,7 +189,9 @@ Panel file:
 
 Rendering result:
 
+    <div class="other_content1"></div>
     <div class="panel"><span>This will be wrapped in panel.</span></div>
+    <div class="other_content2"></div>
 
 Variable scoping inside block content is lexical. Variable scope inside
 block is either the current scope or selectable with an expression similar
@@ -215,10 +229,10 @@ Rendering result:
     <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>{{= title }}</title>
+            <title>A page title</title>
         </head>
         <body>
-            <h1>{{= title }}</h1>
+            <h1>A page title</h1>
             <span>This is the page file.</span>
         </body>
     </html>
