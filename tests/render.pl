@@ -4,7 +4,7 @@
 :- use_module(prolog/st/st_render).
 :- use_module(prolog/st/st_file).
 
-% FIXME these look weird.
+% These add the stream argument to the call.
 
 test_rendering(Call, Expected):-
     Call = st_render_string(Input, Data, File), !,
@@ -16,24 +16,6 @@ test_rendering(Call, Expected):-
     assertion(String = Expected).
 
 test_rendering(Call, Expected):-
-    Call = st_render_string(Input, Data, File, Options),
-    with_output_to_codes((
-        current_output(Stream),
-        call(st_render_string(Input, Data, Stream, File, Options))
-    ), Codes),
-    string_codes(String, Codes),
-    assertion(String = Expected).
-
-semblance_test_rendering(Call, Expected):-
-    Call = st_render_string(Input, Data, File), !,
-    with_output_to_codes((
-        current_output(Stream),
-        call(st_render_string(Input, Data, Stream, File, _{ frontend: semblance }))
-    ), Codes),
-    string_codes(String, Codes),
-    assertion(String = Expected).
-
-semblance_test_rendering(Call, Expected):-
     Call = st_render_string(Input, Data, File, Options),
     with_output_to_codes((
         current_output(Stream),
