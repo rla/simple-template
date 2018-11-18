@@ -1,62 +1,83 @@
-:- begin_tests(st_simple_tokens).
+:- begin_tests(st_tokens_simple).
 
-:- use_module(prolog/st/st_simple_tokens).
+:- use_module(prolog/st/st_tokens).
 
 test(text):-
-    st_simple_tokens(`abc`, [text(`abc`)]).
+    st_tokens(`abc`,
+        _{ frontend: simple }, [text(`abc`)]).
 
 test(out):-
-    st_simple_tokens(`{{= abc }}`, [out(abc)]).
+    st_tokens(`{{= abc }}`,
+        _{ frontend: simple }, [out(abc)]).
 
 test(out_unescaped):-
-    st_simple_tokens(`{{- abc }}`, [out_unescaped(abc)]).
+    st_tokens(`{{- abc }}`,
+        _{ frontend: simple }, [out_unescaped(abc)]).
 
 test(end):-
-    st_simple_tokens(`{{ end }}`, [end]).
+    st_tokens(`{{ end }}`,
+        _{ frontend: simple }, [end]).
 
 test(else):-
-    st_simple_tokens(`{{ else }}`, [else]).
+    st_tokens(`{{ else }}`,
+        _{ frontend: simple }, [else]).
 
 test(include):-
-    st_simple_tokens(`{{ include file/name }}`, [include(file/name)]).
+    st_tokens(`{{ include file/name }}`,
+        _{ frontend: simple }, [include(file/name)]).
 
 test(include_var):-
-    st_simple_tokens(`{{ include file/name, var }}`, [include(file/name, var)]).
+    st_tokens(`{{ include file/name, var }}`,
+        _{ frontend: simple }, [include(file/name, var)]).
 
 test(dynamic_include):-
-    st_simple_tokens(`{{ dynamic_include var }}`, [dynamic_include(var)]).
+    st_tokens(`{{ dynamic_include var }}`,
+        _{ frontend: simple }, [dynamic_include(var)]).
 
 test(block):-
-    st_simple_tokens(`{{ block file/name }}`, [block(file/name)]).
+    st_tokens(`{{ block file/name }}`,
+        _{ frontend: simple }, [block(file/name)]).
 
 test(block_var):-
-    st_simple_tokens(`{{ block file/name, var }}`, [block(file/name, var)]).
+    st_tokens(`{{ block file/name, var }}`,
+        _{ frontend: simple }, [block(file/name, var)]).
 
 test(slot):-
-    st_simple_tokens(`{{ slot }}`, [slot]).
+    st_tokens(`{{ slot }}`,
+        _{ frontend: simple }, [slot]).
 
 test(if):-
-    st_simple_tokens(`{{ if x=1 }}`, [if(x=1)]).
+    st_tokens(`{{ if x=1 }}`,
+        _{ frontend: simple }, [if(x=1)]).
 
 test(else_if):-
-    st_simple_tokens(`{{ else if x=2 }}`, [else_if(x=2)]).
+    st_tokens(`{{ else if x=2 }}`,
+        _{ frontend: simple }, [else_if(x=2)]).
 
 test(each_1):-
-    st_simple_tokens(`{{ each items, item }}`, [each(items, item)]).
+    st_tokens(`{{ each items, item }}`,
+        _{ frontend: simple }, [each(items, item)]).
 
 test(each_2):-
-    st_simple_tokens(`{{ each items, item, index }}`, [each(items, item, index)]).
+    st_tokens(`{{ each items, item, index }}`,
+        _{ frontend: simple }, [each(items, item, index)]).
 
 test(each_3):-
-    st_simple_tokens(`{{ each items, item, index, len }}`, [each(items, item, index, len)]).
+    st_tokens(`{{ each items, item, index, len }}`,
+        _{ frontend: simple }, [each(items, item, index, len)]).
 
 test(invalid):-
-    catch((st_simple_tokens(`{{ invalid`, _), fail), error(invalid_instruction(_)), true).
+    catch((st_tokens(`{{ invalid`,
+        _{ frontend: simple }, _), fail),
+        error(invalid_instruction(_)), true).
 
 test(nonground):-
-    catch((st_simple_tokens(`{{= A }}`, _), fail), error(non_ground_expression(_)), true).
+    catch((st_tokens(`{{= A }}`,
+        _{ frontend: simple }, _), fail),
+        error(non_ground_expression(_)), true).
 
 test(comment):-
-    st_simple_tokens(`{{% this is a comment }}`, []).
+    st_tokens(`{{% this is a comment }}`,
+        _{ frontend: simple }, []).
 
-:- end_tests(st_simple_tokens).
+:- end_tests(st_tokens_simple).

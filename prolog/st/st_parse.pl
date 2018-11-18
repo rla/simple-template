@@ -11,23 +11,7 @@ Parses a list of tokens into a template structure.
 :- use_module(library(option)).
 
 :- use_module(st_white).
-:- use_module(st_simple_tokens).
-:- use_module(st_semblance_tokens).
-
-%! st_tokens(+Codes, -Tokens, +Options) is det.
-%
-% Throw an error if no valid tokenizer is
-% chosen in options.
-
-st_tokens(Codes, Tokens, Options):-
-    (   option(frontend(Frontend), Options)
-    ->  must_be(atom, Frontend),
-        (   Frontend = simple
-        ->  st_simple_tokens(Codes, Tokens)
-        ;   (   Frontend = semblance
-            ->  st_semblance_tokens(Codes, Tokens)
-            ;   throw(error(invalid_frontend_tokenizer(Frontend)))))
-    ;   throw(error(frontend_not_specified))).
+:- use_module(st_tokens).
 
 %! st_parse(+Codes, -Templ, +Options) is det.
 %
@@ -36,7 +20,7 @@ st_tokens(Codes, Tokens, Options):-
 % Throws various parsing errors.
 
 st_parse(Codes, Blocks, Options):-
-    st_tokens(Codes, Tokens, Options),
+    st_tokens(Codes, Options, Tokens),
     phrase(blocks(Tmp, Options), Tokens, Rest), !,
     check_rest(Rest),
     Blocks = Tmp.
