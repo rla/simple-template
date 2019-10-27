@@ -5,6 +5,9 @@ best for cases when you have mainly static HTML.
 
 [![Build Status](https://travis-ci.org/rla/simple-template.svg)](https://travis-ci.org/rla/simple-template)
 
+Visual Code syntax support:
+<https://marketplace.visualstudio.com/items?itemName=rlaanemets.simple-template-syntax>
+
 ## Example
 
 Input markup (`test.html` file):
