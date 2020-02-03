@@ -4,6 +4,7 @@
     tests/funs,
     tests/tokens,
     tests/semblance_tokens,
+    tests/custom_tokens,
     tests/blocks,
     tests/render
 ], [ if(not_loaded) ]).

@@ -21,10 +21,34 @@ Recognizes tokens from symbol codes.
 
 st_tokens(Codes, Options, Tokens):-
     option(frontend(Frontend), Options),
-    must_be(oneof([simple, semblance]), Frontend),
-    phrase(tokens(Tmp1, Frontend), Codes),
+    (( Frontend =
+            syntax_tokens(
+                comment(_, _),
+                out(_, _),
+                out_unescaped(_, _),
+                statement(_, _)),
+        SyntaxTokens = Frontend
+    ) ; ( 
+        must_be(oneof([simple, semblance]), Frontend),
+        named_syntax_tokens(Frontend, SyntaxTokens)
+    )),
+    phrase(tokens(Tmp1, SyntaxTokens), Codes),
     phrase(collapse(Tmp2), Tmp1), !,
     Tokens = Tmp2.
+
+named_syntax_tokens(simple, syntax_tokens(
+    comment("{{%","}}"),
+    out("{{=","}}"),
+    out_unescaped("{{-","}}"),
+    statement("{{","}}"))).
+
+named_syntax_tokens(semblance, syntax_tokens(
+    comment("{#","#}"),
+    out("{{","}}"),
+    out_unescaped(keyword_unescape_start("{%"),"%}"),
+    statement("{%","%}"))).
+
+keyword_unescape_start(StartToken) --> StartToken, whites, "unescape".
 
 tokens(Tokens, Frontend) -->
     comment(Frontend), !,
@@ -36,29 +60,22 @@ tokens([Token|Tokens], Frontend) -->
 
 tokens([], _) --> "".
 
-comment(simple) -->
-    "{{%", string(_), "}}", !.
+comment(syntax_tokens(comment(Start, End), out(_,_), out_unescaped(_,_), statement(_,_))) -->
+    Start, string(_), End, !.
 
-comment(semblance) -->
-    "{#", string(_), "#}", !.
+out(syntax_tokens(comment(_,_), out(Start, End), out_unescaped(_,_), statement(_,_)), out(Term)) -->
+    { string_codes(End, EndCodes) },
+    Start, whites, term_to_token(Term, EndCodes), !.
 
-out(simple, out(Term)) -->
-    "{{=", whites, term_to_token(Term, `}}`), !.
-
-out(semblance, out(Term)) -->
-    "{{", whites, term_to_token(Term, `}}`), !.
-
-out_unescaped(simple, out_unescaped(Term)) -->
-    "{{-", whites, term_to_token(Term, `}}`), !.
-
-out_unescaped(semblance, out_unescaped(Term)) -->
-    "{%", whites, "unescape", whites, term_to_token(Term, `%}`), !.
-
-token(Term, Frontend) -->
-    out(Frontend, Term), !.
+out_unescaped(syntax_tokens(comment(_,_), out(_,_), out_unescaped(Start, End), statement(_,_)), out_unescaped(Term)) -->
+    { string_codes(End, EndCodes) },
+    Start, whites, term_to_token(Term, EndCodes), !.
 
 token(Term, Frontend) -->
     out_unescaped(Frontend, Term), !.
+
+token(Term, Frontend) -->
+    out(Frontend, Term), !.
 
 token(end, Frontend) -->
     start(Frontend), whites, "end", whites, end(Frontend), !.
@@ -97,11 +114,11 @@ token(_, Frontend) -->
 token(Code, _) -->
     [Code].
 
-start(simple) --> "{{", !.
-start(semblance) --> "{%", !.
+start(syntax_tokens(comment(_,_), out(_,_), out_unescaped(_,_), statement(Start, _))) -->
+    Start, !.
 
-end(simple) --> "}}", !.
-end(semblance) --> "%}", !.
+end(syntax_tokens(comment(_,_), out(_,_), out_unescaped(_,_), statement(_, End))) -->
+    End, !.
 
 % Collapses codes into text tokens.
 
@@ -173,11 +190,9 @@ invalid(Frontend) -->
 
 % Extracts term from input.
 
-term(Term, simple) -->
-    term_to_token(Term, `}}`), !.
-
-term(Term, semblance) -->
-    term_to_token(Term, `%}`), !.
+term(Term, syntax_tokens(comment(_,_), out(_,_), out_unescaped(_,_), statement(_, End))) -->
+    { string_codes(End, EndCodes) },
+    term_to_token(Term, EndCodes), !.
 
 term_to_token(Term, Delimiter) -->
     codes_delimiter(Delimiter, Codes),
