@@ -1,6 +1,6 @@
 version:=$(shell swipl -q -s pack -g 'version(V),writeln(V)' -t halt)
 packfile=simple_template-$(version).tgz
-remote=www-data@packs.rlaanemets.com:/sites/packs.rlaanemets.com/public/simple-template
+remote=sites@infdot.com:/sites/packs.rlaanemets.com/public/simple-template
 
 package: test
 	tar cvzf $(packfile) prolog tests pack.pl README.md LICENSE
