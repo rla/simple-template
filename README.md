@@ -81,6 +81,92 @@ output:
 
 It is not possible to mix two syntaxes through a single render call.
 
+## User-Defined Syntax
+
+Alternatively, you can specify your own templating delimiter syntax.
+This is useful to prevent template collision, in similar cases to semblance,
+but is more flexible.
+
+Input markup (`test.html` file):
+
+    <h1><%= title %></h1>
+    <% each items, item %>
+        <h2><%= item.title %></h2>
+        <div class="content"><%~ item.content %></div>
+    <% end %>
+
+rendering with data:
+
+    use_module(library(st/st_render)).
+
+    current_output(Out),
+    st_render_file(test, _{
+        title: 'Hello',
+        items: [
+            _{ title: 'Item 1', content: 'Abc 1' },
+            _{ title: 'Item 1', content: 'Abc 2' }
+        ]
+    }, Out, _{
+        frontend: syntax_tokens(
+            comment("<%#", "%>"),
+            out("<%=", "%>"),
+            out_unescaped("<%~", "%>"),
+            statement("<%", "%>")
+        )
+    }).
+
+output:
+
+    <h1>Hello</h1>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 1</div>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 2</div>
+
+## Unescape Keyword in User-Defined Syntax
+
+If you'd like to use an unescape keyword, you can use the helper
+`keyword_unescape_start(Token)` in place of a string, where `Token`
+is the starting Token to unify:
+
+    use_module(library(st/st_render)).
+
+    current_output(Out),
+    st_render_file(test, _{
+        title: 'Hello',
+        items: [
+            _{ title: 'Item 1', content: 'Abc 1' },
+            _{ title: 'Item 1', content: 'Abc 2' }
+        ]
+    }, Out, _{
+        frontend: syntax_tokens(
+            comment("<%#", "%>"),
+            out("<%=", "%>"),
+            out_unescaped(keyword_unescape_start("<%="), "%>"),
+            statement("<%", "%>")
+        )
+    }).
+
+With input markup (`test.html` file):
+
+    <h1><%= title %></h1>
+    <% each items, item %>
+        <h2><%= item.title %></h2>
+        <div class="content"><%= unescape item.content %></div>
+    <% end %>
+
+output:
+
+    <h1>Hello</h1>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 1</div>
+
+    <h2>Item 1</h2>
+    <div class="content">Abc 2</div>
+
 ## API
 
 Render template from string:
@@ -393,6 +479,7 @@ project [page](https://github.com/rla/simple-template).
 
 ## Changelog
 
+ * 2020-02-03 version 1.3.1. Add user-defined templating syntax.
  * 2017-11-03 version 1.2.0. Option to deal with undefined variables.
  * 2015-12-28 version 1.1.0. Add alternate syntax: semblance.
  * 2015-11-07 version 1.0.0. Removal of global options. Backwards-incompatible.
